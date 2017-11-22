@@ -17,7 +17,7 @@ var (
 
 func New(
 	beat beat.Info,
-	stats *outputs.Stats,
+	stats outputs.Observer,
 	cfg *common.Config,
 ) (outputs.Group, error) {
 	if !cfg.HasField("batch_size") {

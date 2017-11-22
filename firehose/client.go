@@ -18,17 +18,17 @@ type client struct {
 	beatName           string
 	encoder            codec.Codec
 	timeout            time.Duration
-	stats              *outputs.Stats
+	observer           outputs.Observer
 }
 
-func newClient(sess *session.Session, config *FirehoseConfig, stats *outputs.Stats, beat beat.Info) (*client, error) {
+func newClient(sess *session.Session, config *FirehoseConfig, observer outputs.Observer, beat beat.Info) (*client, error) {
 	client := &client{
 		firehose:           firehose.New(sess),
 		deliveryStreamName: config.DeliveryStreamName,
 		beatName:           beat.Beat,
 		encoder:            json.New(false, beat.Version),
 		timeout:            config.Timeout,
-		stats:              stats,
+		observer:           observer,
 	}
 
 	return client, nil
@@ -43,23 +43,23 @@ func (client *client) Connect() error {
 }
 
 func (client *client) Publish(batch publisher.Batch) error {
-	st := client.stats
 	events := batch.Events()
-	st.NewBatch(len(events))
+	observer := client.observer
+	observer.NewBatch(len(events))
 
 	records, dropped := client.mapEvents(events)
 	res, err := client.sendRecords(records)
 	if err != nil {
 		logp.Critical("Unable to send batch: %v", err)
-		st.Dropped(len(events))
+		observer.Dropped(len(events))
 		return err
 	}
 
 	processFailedDeliveries(res, batch)
 	batch.ACK()
 	debugf("Sent %d records", len(events))
-	st.Dropped(dropped)
-	st.Acked(len(events) - dropped)
+	observer.Dropped(dropped)
+	observer.Acked(len(events) - dropped)
 	return nil
 }
 

@@ -1,4 +1,4 @@
-package firehose
+package main
 
 import (
 	"github.com/elastic/beats/libbeat/outputs"
