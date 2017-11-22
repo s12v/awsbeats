@@ -1,0 +1,2 @@
+# awsbeats
+Experimental filebeats plugin
