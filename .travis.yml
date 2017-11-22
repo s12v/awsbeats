@@ -2,14 +2,15 @@ language: go
 
 go:
   - 1.8
-  - master
+  - 1.9
+  - tip
 
 install:
   - curl https://glide.sh/get | sh
   - glide install
 
 script:
-  - make test
+  - make
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
