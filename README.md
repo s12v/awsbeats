@@ -3,6 +3,8 @@ Experimental filebeats plugin
 
 
 ## Build
+
+Build requires go 1.10
 ```
 go build -buildmode=plugin ./plugins/firehose
 ./filebeat -e -plugin firehose.so -d '*'
