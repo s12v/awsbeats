@@ -1,0 +1,19 @@
+package: github.com/s12v/awsbeats
+import:
+- package: github.com/aws/aws-sdk-go
+  version: ^1.12.32
+  subpackages:
+  - aws
+  - aws/session
+  - service/firehose
+- package: github.com/elastic/beats
+  version: ^6.0.0
+  subpackages:
+  - libbeat/beat
+  - libbeat/common
+  - libbeat/logp
+  - libbeat/outputs
+  - libbeat/outputs/codec
+  - libbeat/outputs/codec/json
+  - libbeat/plugin
+  - libbeat/publisher

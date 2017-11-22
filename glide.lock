@@ -1,0 +1,95 @@
+hash: 9cada621aa6345bf2658e566dbe145840b33181d36ae8b3ca6fb5dfd50e5594f
+updated: 2017-11-22T22:42:34.5882174+01:00
+imports:
+- name: github.com/aws/aws-sdk-go
+  version: 991fe2497a95d757bb53f95cbcebf3d26134c9fe
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/endpoints
+  - aws/request
+  - aws/session
+  - aws/signer/v4
+  - internal/shareddefaults
+  - private/protocol
+  - private/protocol/json/jsonutil
+  - private/protocol/jsonrpc
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/xml/xmlutil
+  - service/firehose
+  - service/sts
+- name: github.com/elastic/beats
+  version: a2080b2fd8b768c5f850c5c73307b2f21817f5e5
+  subpackages:
+  - libbeat/beat
+  - libbeat/common
+  - libbeat/common/atomic
+  - libbeat/common/cfgwarn
+  - libbeat/common/dtfmt
+  - libbeat/common/file
+  - libbeat/logp
+  - libbeat/monitoring
+  - libbeat/outputs
+  - libbeat/outputs/codec
+  - libbeat/outputs/codec/json
+  - libbeat/outputs/transport
+  - libbeat/paths
+  - libbeat/plugin
+  - libbeat/publisher
+  - libbeat/testing
+- name: github.com/elastic/go-ucfg
+  version: ec8488a52542c0c51e42e8ea204dcaff400bc644
+  subpackages:
+  - cfgutil
+  - flag
+  - internal/parse
+  - json
+  - yaml
+- name: github.com/fatih/color
+  version: 5df930a27be2502f99b292b7cc09ebad4d0891f4
+- name: github.com/go-ini/ini
+  version: 32e4c1e6bc4e7d0d8451aa6b75200d19e37a536a
+- name: github.com/jmespath/go-jmespath
+  version: dd801d4f4ce7ac746e7e7b4489d2fa600b3b096b
+- name: github.com/joeshaw/multierror
+  version: 69b34d4ec901851247ae7e77d33909caf9df99ed
+- name: github.com/mattn/go-colorable
+  version: 5411d3eea5978e6cdc258b30de592b60df6aba96
+- name: github.com/mattn/go-isatty
+  version: 57fdcb988a5c543893cc61bce354a6e24ab70022
+  repo: https://github.com/mattn/go-isatty
+- name: github.com/pkg/errors
+  version: f15c970de5b76fac0b59abb32d62c17cc7bed265
+- name: github.com/satori/go.uuid
+  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+- name: github.com/urso/go-structform
+  version: 8b344343f44bca3db9b0242cb0a3985c0c7ed64a
+  subpackages:
+  - gotype
+  - internal/unsafe
+  - json
+  - visitors
+- name: golang.org/x/net
+  version: 9dfe39835686865bff950a07b394c12a98ddc811
+  subpackages:
+  - proxy
+- name: golang.org/x/sys
+  version: e24f485414aeafb646f6fca458b0bf869c0880a1
+  repo: https://go.googlesource.com/sys
+  subpackages:
+  - unix
+- name: gopkg.in/yaml.v2
+  version: 287cf08546ab5e7e37d55a84f7ed3fd1db036de5
+testImports: []
