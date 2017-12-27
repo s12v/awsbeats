@@ -57,7 +57,7 @@ func (client *client) Publish(batch publisher.Batch) error {
 
 	processFailedDeliveries(res, batch)
 	batch.ACK()
-	debugf("Sent %d records", len(events))
+	logp.Debug("firehose", "Sent %d records", len(events))
 	observer.Dropped(dropped)
 	observer.Acked(len(events) - dropped)
 	return nil

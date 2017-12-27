@@ -6,11 +6,9 @@ import (
 	"github.com/elastic/beats/libbeat/beat"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/elastic/beats/libbeat/logp"
 )
 
 var (
-	debugf        = logp.MakeDebug("firehose")
 	newClientFunc = newClient
 	awsNewSession = session.NewSession
 )
