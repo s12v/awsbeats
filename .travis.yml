@@ -21,7 +21,8 @@ deploy:
   provider: releases
   api_key:
     secure: i1eQugsb1lstR8UNBUqV/OjJhxldDScFLfeZ5eo8Rb40tpJ3lN84kAN/ZJUuNkeKqX9wUJASIqwh1pmiW6u46QYZ6RmU31Lele6SiWXspUxdo6kT6JtaZaX2xLT3lcy9KCtc5pLMvRAJNww2X8MsM+9+ZTLnhc48c1aNDbZgOSUPEDljf2yMnWcMiulPIXQJZ6PIR78nsu+pCzomUibcmEVwAjRcqQSIYIRkMts11+o+8ilBk15J+/2ViAqsc1I0tbm49+TKNM4hmaxU4zok5XKTSF9SBilnj5Jwf4SzN2inmKRVdQndPYTBhMRXfn+R6tBktnrOQdm1nX+RkayFZFp9JnqlUpi19+PtnZGOMomtvgfAxAuXrOFZ6rmQF4LMiKCzQOEXL2NCq7HaFy/QFPDq6KQGhVEwxtz5WJD+6LMZUozgvsLgbVz6WNy1WvEEo7PB8lSnGZqCgzXA5GxsZ+RfF70HXemp0SpAZdNkaf5b/GsDLMuXcgt4DAPYPv8SDLj62FmVkNiOnLj3P2aA/MyrF5VVadPpZQdbXrmbLlf864qU0AG3T9uIIG/Ceqg7l1AiNkC2I513t8EQjCtqKH6JTfmlU/Ax1FulRlKDzHK/vByxupUzmTxDQJnvnp+aJhPkWf1nyQwEjZ+PTnpNPHlatZXi+AawVlNAWt7lSqg=
-  file: "$(ls $TRAVIS_BUILD_DIR/target/*)"
+  file_glob: true
+  file: target/*
   skip_cleanup: true
   on:
     tags: true
