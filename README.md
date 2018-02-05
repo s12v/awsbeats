@@ -2,7 +2,7 @@
 
 # AWS Beats
 
-Experimental (https://github.com/elastic/beats/filebeats)](filebeats) output plugin.
+Experimental [Filebeats](https://github.com/elastic/beats/filebeats) output plugin.
 Supports AWS Kinesis Firehose streams.
 
 ## Build
