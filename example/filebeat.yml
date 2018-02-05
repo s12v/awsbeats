@@ -1,0 +1,13 @@
+filebeat.prospectors:
+- type: log
+
+  # Change to true to enable this prospector configuration.
+  enabled: true
+
+  # Paths that should be crawled and fetched. Glob based paths.
+  paths:
+    - /home/ubuntu/awsbeats-example/log/*.log
+
+output.firehose:
+    region: us-east-1
+    stream_name: test1
