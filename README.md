@@ -1,20 +1,31 @@
-# awsbeats
-Experimental filebeats plugin
+[![Build Status](https://travis-ci.org/s12v/awsbeats.svg?branch=master)](https://travis-ci.org/s12v/awsbeats)
 
+# AWS Beats
+
+Experimental (https://github.com/elastic/beats/filebeats)](filebeats) output plugin.
+Supports AWS Kinesis Firehose streams.
 
 ## Build
 
 Build requires go 1.10
 ```
-go build -buildmode=plugin ./plugins/firehose
+make
+```
+or `go build -buildmode=plugin ./plugins/firehose`
+
+## Run
+
+```
 ./filebeat -e -plugin firehose.so -d '*'
 ```
+
+TODO: mention that filebeat has to be built using the same Go version
 
 ## Configuration
 
 Add to `filebeats.yml`:
 ```
 output.firehose:
-    region: eu-central-1
-    stream_name: test1
+  region: eu-central-1
+  stream_name: test1
 ```
