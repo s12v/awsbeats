@@ -8,6 +8,11 @@ filebeat.prospectors:
   paths:
     - /home/ubuntu/awsbeats-example/log/*.log
 
+queue.mem:
+  events: 4096
+  flush.min_events: 500
+  flush.timeout: 30s
+
 output.firehose:
-    region: us-east-1
-    stream_name: test1
+  region: us-east-1
+  stream_name: test1
