@@ -17,7 +17,7 @@ output.firehose:
   region: eu-central-1
   stream_name: test1 # Your delivery stream name
 ```
-- Run it with `./filebeat -plugin firehose.so`
+- Run filebeat with plugin `./filebeat-v6.1.3-go1.10rc1-linux-amd64 -plugin firehose.so-0.0.3-v6.1.3-go1.10rc1-linux-amd64`
 
 ## AWS authentication
 
