@@ -16,3 +16,5 @@
 coverage.txt
 vendor
 target
+.vagrant
+example/*
