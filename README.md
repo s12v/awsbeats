@@ -37,7 +37,7 @@ make BEATS_VERSION=v6.1.3
 
 In `target/` you will find filebeat and plugin, for example:
 ```
-filebeat-v6.1.3-go1.10rc1-linux-amd64*
+filebeat-v6.1.3-go1.10rc1-linux-amd64
 firehose.so-1-snapshot-v6.1.3-go1.10rc1-linux-amd64
 ```
 
