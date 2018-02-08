@@ -19,8 +19,8 @@ function run(event, context) {
       throw new Error(`Invalid version ${beatsVersion}`);
     }
 
+    console.log(`Awsbeats: ${ourVersion}-v${ourBeatsVersion}, beats: ${beatsVersion}`);
     if (!semver.valid(ourBeatsVersion) || semver.gt(beatsVersion, ourBeatsVersion)) {
-      console.log(`Current version: ${ourVersion}-${ourBeatsVersion}`);
       return doRelease(
           semver.inc(ourVersion, 'patch'),
           semver.clean(beatsVersion)
@@ -34,7 +34,7 @@ function run(event, context) {
 
 function getLatestRelease() {
   return octokit.repos.getLatestRelease({owner: 's12v', repo: 'awsbeats'})
-    .then(result => result.data.tag_name.split("-v", 1));
+    .then(result => result.data.tag_name.split('-v', 2));
 }
 
 function getLatestBeatsRelease() {
