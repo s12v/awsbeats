@@ -10,7 +10,7 @@ install:
 
 script:
   - |
-    if [ -n "$TRAVIS_TAG" ] then
+    if [ -n "$TRAVIS_TAG" ]; then
       IFS='|' read -ra arr <<< "${TRAVIS_TAG/-v/|}"
       make AWSBEATS_VERSION=${arr[0]} BEATS_VERSION=${arr[1]}
     else
