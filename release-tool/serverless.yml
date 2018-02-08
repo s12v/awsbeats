@@ -13,5 +13,5 @@ functions:
   cron:
     handler: handler.run
     events:
-      - schedule: rate(5 minute)
+      - schedule: rate(2 minutes)
 
