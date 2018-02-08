@@ -1,0 +1,17 @@
+service: awsbeats-release-tool
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: prod
+  region: us-east-1
+  profile: awsbeats-sls
+  memorySize: 128
+  timeout: 10
+
+functions:
+  cron:
+    handler: handler.run
+    events:
+      - schedule: rate(5 minute)
+
