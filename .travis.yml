@@ -3,16 +3,17 @@ language: go
 go:
   - 1.10rc2
 
-env:
-  - BEATS_VERSION=v6.1.3
-
 install:
   - go get github.com/elastic/beats || true
   - curl https://glide.sh/get | sh
   - glide install
 
 script:
-  - make AWSBEATS_VERSION=$TRAVIS_TAG
+  - |
+    IFS='|' read -ra arr <<< "${TRAVIS_TAG/-v/|}"
+    export AWSBEATS_VERSION=${arr[0]}
+    export BEATS_VERSION=${arr[1]}
+  - make
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

@@ -1,0 +1,16 @@
+{
+  "name": "awsbeats-release-tool",
+  "version": "0.0.1",
+  "description": "Checks periodically for new Beats releases and releases a new AWSBeats",
+  "main": "handler.js",
+  "dependencies": {
+    "@octokit/rest": "^14.0.8",
+    "semver": "^5.5.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sergey Novikov <snov@snov.me>",
+  "license": "Apache 2.0"
+}
