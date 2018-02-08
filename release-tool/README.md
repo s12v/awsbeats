@@ -17,3 +17,6 @@ sls deploy
 
 ## Run locally
 
+```
+GITHUB_TOKEN=boom sls invoke local -f cron
+```
