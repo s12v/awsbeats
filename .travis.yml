@@ -10,10 +10,12 @@ install:
 
 script:
   - |
-    IFS='|' read -ra arr <<< "${TRAVIS_TAG/-v/|}"
-    export AWSBEATS_VERSION=${arr[0]}
-    export BEATS_VERSION=${arr[1]}
-  - make
+    if [ -n "$TRAVIS_TAG" ] then
+      IFS='|' read -ra arr <<< "${TRAVIS_TAG/-v/|}"
+      make AWSBEATS_VERSION=${arr[0]} BEATS_VERSION=${arr[1]}
+    else
+      make
+    fi
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
