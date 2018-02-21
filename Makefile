@@ -12,7 +12,7 @@ test:
 build:
 	go build -buildmode=plugin ./plugins/firehose
 	@mkdir -p "$(CURDIR)/target"
-	@mv firehose.so "$(CURDIR)/target/firehose.so-$(AWSBEATS_VERSION)-$(BEATS_VERSION)-$(GO_VERSION)"
+	@mv firehose.so "$(CURDIR)/target/firehose-$(AWSBEATS_VERSION)-$(BEATS_VERSION)-$(GO_VERSION).so"
 
 beats:
 ifdef BEATS_VERSION
