@@ -19,6 +19,7 @@ script:
   - |
     FB=$(ls target/filebeat* | tail -1)
     FH=$(ls target/firehose* | tail -1)
+    echo "$FB -plugin $FH -c example/filebeat.yml --once"
     $FB -plugin $FH -c example/filebeat.yml --once
 
 after_success:
