@@ -17,6 +17,7 @@ build:
 beats:
 ifdef BEATS_VERSION
 	@echo "Building filebeats:$(BEATS_VERSION)..."
+	@mkdir -p "$(CURDIR)/target"
 	@cd "$$GOPATH/src/github.com/elastic/beats/filebeat" &&\
 	git checkout $(BEATS_VERSION) &&\
 	make &&\
