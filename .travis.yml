@@ -16,6 +16,10 @@ script:
     else
       make
     fi
+  - |
+    FB=$(ls target/filebeat* | tail -1)
+    FH=$(ls target/firehose* | tail -1)
+    $FB -plugin $FH -c example/filebeat.yml --once
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
