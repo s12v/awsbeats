@@ -1,15 +1,15 @@
 package firehose
 
 import (
-	"time"
-	"github.com/aws/aws-sdk-go/service/firehose"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/elastic/beats/libbeat/publisher"
+	"github.com/aws/aws-sdk-go/service/firehose"
+	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/libbeat/outputs"
 	"github.com/elastic/beats/libbeat/outputs/codec"
-	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/outputs/codec/json"
+	"github.com/elastic/beats/libbeat/publisher"
+	"time"
 )
 
 type client struct {

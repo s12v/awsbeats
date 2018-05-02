@@ -1,9 +1,9 @@
 package firehose
 
 import (
-	"testing"
-	"github.com/elastic/beats/libbeat/publisher"
 	"github.com/elastic/beats/libbeat/beat"
+	"github.com/elastic/beats/libbeat/publisher"
+	"testing"
 )
 
 type MockCodec struct {

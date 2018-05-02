@@ -1,13 +1,14 @@
-package firehose
+package streams
 
 import (
 	"errors"
 	"time"
 )
 
-type FirehoseConfig struct {
+type StreamsConfig struct {
 	Region             string        `config:"region"`
 	DeliveryStreamName string        `config:"stream_name"`
+	PartitionKey       string        `config:"partition_key"`
 	BatchSize          int           `config:"batch_size"`
 	MaxRetries         int           `config:"max_retries"`
 	Timeout            time.Duration `config:"timeout"`
@@ -21,10 +22,12 @@ type backoff struct {
 
 const (
 	defaultBatchSize = 50
+	// As per https://docs.aws.amazon.com/sdk-for-go/api/service/kinesis/#Kinesis.PutRecords
+	maxBatchSize = 500
 )
 
 var (
-	defaultConfig = FirehoseConfig{
+	defaultConfig = StreamsConfig{
 		Timeout:    90 * time.Second,
 		MaxRetries: 3,
 		Backoff: backoff{
@@ -34,7 +37,7 @@ var (
 	}
 )
 
-func (c *FirehoseConfig) Validate() error {
+func (c *StreamsConfig) Validate() error {
 	if c.Region == "" {
 		return errors.New("region is not defined")
 	}
@@ -43,7 +46,7 @@ func (c *FirehoseConfig) Validate() error {
 		return errors.New("stream_name is not defined")
 	}
 
-	if c.BatchSize > 500 || c.BatchSize < 1 {
+	if c.BatchSize > maxBatchSize || c.BatchSize < 1 {
 		return errors.New("invalid batch size")
 	}
 
