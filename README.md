@@ -41,6 +41,16 @@ filebeat-v6.1.3-go1.10rc1-linux-amd64
 firehose.so-1-snapshot-v6.1.3-go1.10rc1-linux-amd64
 ```
 
+### Trouble-shooting
+
+If you see `No such file or directory` error of filebeat while building the plugin, you likely to be relying on the default `GOPATH`. It is `$HOME/go` in recent versions of golang.
+
+If you got affected by this, try running:
+
+```
+$ make BEATS_VERSION=v6.1.3 GOPATH=$HOME/go
+```
+
 ## Output buffering
 
 TODO
