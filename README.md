@@ -11,13 +11,27 @@ __NOTE: Filebeat and plugin should be built using the same Golang version.__
 ## Quick start
 
 - Download binary files from https://github.com/s12v/awsbeats/releases
+
+### Firehose
+
 - Add to `filebeats.yml`:
 ```
 output.firehose:
   region: eu-central-1
   stream_name: test1 # Your delivery stream name
 ```
-- Run filebeat with plugin `./filebeat-v6.1.3-go1.10rc1-linux-amd64 -plugin firehose.so-0.0.3-v6.1.3-go1.10rc1-linux-amd64`
+- Run filebeat with plugin `./filebeat-v6.1.3-go1.10rc1-linux-amd64 -plugin kinesis.so-0.0.3-v6.1.3-go1.10rc1-linux-amd64`
+
+### Streams
+
+- Download binary files from https://github.com/s12v/awsbeats/releases
+- Add to `filebeats.yml`:
+```
+output.streams:
+  region: eu-central-1
+  stream_name: test1 # Your stream name
+```
+- Run filebeat with plugin `./filebeat-v6.1.3-go1.10rc1-linux-amd64 -plugin kinesis.so-0.0.3-v6.1.3-go1.10rc1-linux-amd64`
 
 ## AWS authentication
 
@@ -38,7 +52,7 @@ make BEATS_VERSION=v6.1.3
 In `target/` you will find filebeat and plugin, for example:
 ```
 filebeat-v6.1.3-go1.10rc1-linux-amd64
-firehose.so-1-snapshot-v6.1.3-go1.10rc1-linux-amd64
+kinesis.so-1-snapshot-v6.1.3-go1.10rc1-linux-amd64
 ```
 
 ## Output buffering
