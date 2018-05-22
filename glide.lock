@@ -1,8 +1,8 @@
 hash: 12f47a7eb83aa755e36611aec2e5b4373251bf882052de4840c166c1df263c59
-updated: 2018-02-08T00:11:34.347856133+01:00
+updated: 2018-05-22T17:57:57.395546+09:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 586c9ba6027a527800564282bb843d7e6e7985c9
+  version: cf00d544fc3c02f31e05e8d02444a1325d3a840b
   subpackages:
   - aws
   - aws/awserr
@@ -20,6 +20,8 @@ imports:
   - aws/request
   - aws/session
   - aws/signer/v4
+  - internal/sdkio
+  - internal/sdkrand
   - internal/shareddefaults
   - private/protocol
   - private/protocol/json/jsonutil
@@ -29,6 +31,7 @@ imports:
   - private/protocol/rest
   - private/protocol/xml/xmlutil
   - service/firehose
+  - service/kinesis
   - service/sts
 - name: github.com/go-ini/ini
   version: 32e4c1e6bc4e7d0d8451aa6b75200d19e37a536a
