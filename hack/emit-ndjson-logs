@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+for i in $(seq 5); do
+  echo '{"mykey":"mykey4","myvalue":"'$i'"}' | tee -a logs/foo.log
+done
