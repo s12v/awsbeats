@@ -44,8 +44,8 @@ Build requires Go 1.10+ and Linux. You need to define Filebeat version (`v6.1.3`
 
 ```
 go get github.com/elastic/beats
-# curl https://glide.sh/get | sh
-glide install
+# curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+dep ensure
 make BEATS_VERSION=v6.1.3
 ```
 
