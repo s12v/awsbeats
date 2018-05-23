@@ -55,6 +55,31 @@ filebeat-v6.1.3-go1.10rc1-linux-amd64
 kinesis.so-1-snapshot-v6.1.3-go1.10rc1-linux-amd64
 ```
 
+## Running in a docker container
+
+To build a docker image for awsbeats, run:
+
+```
+make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 GOPATH=$HOME/go
+```
+
+The resulting docker image is tagged `s12v/awsbeats:canary`.  It contains a custom build of filebeat and the plugin, along with all the relevant files from the official filebeat docker image.
+
+To try running it, provide AWS credentials via e.g. envvars and run `hack/dockerized-filebeat`:
+
+```
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+
+hack/containerized-filebeat
+```
+
+Emit some line-delimited json log messages:
+
+```
+hack/emit-ndjson-logs
+```
+
 ### Trouble-shooting
 
 If you see `No such file or directory` error of filebeat while building the plugin, you likely to be relying on the default `GOPATH`. It is `$HOME/go` in recent versions of golang.

@@ -1,0 +1,28 @@
+#filebeat.config:
+#  prospectors:
+#    path: ${path.config}/prospectors.d/*.yml
+#    reload.enabled: false
+#  modules:
+#    path: ${path.config}/modules.d/*.yml
+#    reload.enabled: false
+
+filebeat.prospectors:
+  - input_type: log
+    paths:
+    - /mnt/log/*.log
+    json.keys_under_root: true
+    json.add_error_key: true
+
+processors:
+- add_cloud_metadata:
+
+output:
+  streams:
+    region: ap-northeast-1
+    stream_name: test1
+    partition_key: mykey
+
+queue.mem:
+  events: 4096
+  flush.min_events: 5
+  flush.timeout: 3s

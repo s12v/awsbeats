@@ -19,8 +19,8 @@ script:
   - |
     FB=$(ls target/filebeat* | tail -1)
     FH=$(ls target/kinesis* | tail -1)
-    echo "$FB -plugin $FH -c example/filebeat.yml --once"
-    $FB -plugin $FH -c example/filebeat.yml --once
+    echo "$FB -plugin $FH -c example/firehose/filebeat.yml --once"
+    $FB -plugin $FH -c example/firehose/filebeat.yml --once
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

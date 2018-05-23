@@ -17,4 +17,4 @@ coverage.txt
 vendor
 target
 .vagrant
-example/*
+example/firehose/log/*

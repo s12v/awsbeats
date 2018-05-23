@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+rm -rf logs/*
+
+for stream in foo; do
+  for i in $(seq 5); do
+    echo ${stream}{i} >> ${stream}.log
+  done
+done
+
+docker run \
+  --rm \
+  -v $(pwd)/logs:/mnt/log/ \
+  -v $(pwd)/filebeat.yml:/etc/filebeat/filebeat.yml \
+  -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+  -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+  s12v/awsbeats:canary \
+  filebeat \
+  --plugin kinesis.so \
+  -e \
+  -d='*' \
+  -c /etc/filebeat/filebeat.yml \
+  --strict.perms=false
+
+# Note that `strict.perms` seems to be required due to https://discuss.elastic.co/t/volume-mapped-filebeat-yml-permissions-from-docker-on-windows-host/91893/2
+
+# In another terminal, emit some log messages:
+#
+#  for i in $(seq 5); do echo '{"mykey":"foo'${i}'"}' >> logs/foo.log; done
+
