@@ -10,7 +10,10 @@ __NOTE: Filebeat and plugin should be built using the same Golang version.__
 
 ## Quick start
 
+Either:
+
 - Download binary files from https://github.com/s12v/awsbeats/releases
+- Pull docker images from [`kubeaws/awsbeats`](https://hub.docker.com/r/kubeaws/awsbeats/). Note that the docker repository is subject to change in near future.
 
 ### Firehose
 
@@ -30,7 +33,10 @@ output.firehose:
 output.streams:
   region: eu-central-1
   stream_name: test1 # Your stream name
+  partition_key: mykey # In case your beat event is {"foo":1,"mykey":"bar"}, not "mykey" but "bar" is used as the partition key
 ```
+See the example [filebeat.yaml](https://github.com/s12v/awsbeats/blob/master/example/streams/filebeat.yml) for more details.
+
 - Run filebeat with plugin `./filebeat-v6.1.3-go1.10rc1-linux-amd64 -plugin kinesis.so-0.0.3-v6.1.3-go1.10rc1-linux-amd64`
 
 ## AWS authentication
@@ -78,6 +84,40 @@ Emit some line-delimited json log messages:
 
 ```
 hack/emit-ndjson-logs
+```
+
+## Running on a Kubernetes cluster
+
+Use the helm chart:
+
+```
+cat << EOS > values.yaml
+image:
+  repository: kubeaws/awsbeats
+  tag: canary
+  pullPolicy: Always
+
+plugins:
+  - kinesis.so
+
+config:
+  output.file:
+    enabled: false
+  output.streams:
+    enabled: true
+    region: ap-northeast-1
+    stream_name: test1
+    partition_key: mykey
+EOS
+
+git clone git@github.com:mumoshu/charts.git charts
+pushd charts
+git checkout filebeat-plugins
+popd
+
+helm upgrade --install filebeat ./charts/stable/filebeat \
+  -f values.yaml \
+  --set rbac.enabled=true
 ```
 
 ### Trouble-shooting
