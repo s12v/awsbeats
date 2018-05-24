@@ -6,13 +6,14 @@ import (
 )
 
 type StreamsConfig struct {
-	Region             string        `config:"region"`
-	DeliveryStreamName string        `config:"stream_name"`
-	PartitionKey       string        `config:"partition_key"`
-	BatchSize          int           `config:"batch_size"`
-	MaxRetries         int           `config:"max_retries"`
-	Timeout            time.Duration `config:"timeout"`
-	Backoff            backoff       `config:"backoff"`
+	Region               string        `config:"region"`
+	DeliveryStreamName   string        `config:"stream_name"`
+	PartitionKey         string        `config:"partition_key"`
+	PartitionKeyProvider string        `config:"partition_key_provider"`
+	BatchSize            int           `config:"batch_size"`
+	MaxRetries           int           `config:"max_retries"`
+	Timeout              time.Duration `config:"timeout"`
+	Backoff              backoff       `config:"backoff"`
 }
 
 type backoff struct {
@@ -48,6 +49,10 @@ func (c *StreamsConfig) Validate() error {
 
 	if c.BatchSize > maxBatchSize || c.BatchSize < 1 {
 		return errors.New("invalid batch size")
+	}
+
+	if c.PartitionKeyProvider != "" && c.PartitionKeyProvider != "xid" {
+		return errors.New("invalid partition key procider: the only supported provider is `xid`")
 	}
 
 	return nil

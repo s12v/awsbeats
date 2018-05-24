@@ -22,7 +22,7 @@ data:
       region: ap-northeast-1
       stream_name: test1
       # Use https://github.com/rs/xid to generate a unique ID per event
-      partition_key_generator: xid
+      partition_key_provider: xid
 
     queue.mem:
       events: 4096

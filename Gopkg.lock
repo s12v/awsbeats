@@ -79,6 +79,12 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/rs/xid"
+  packages = ["."]
+  revision = "02dd45c33376f85d1064355dc790dcc4850596b1"
+  version = "v1.1"
+
+[[projects]]
   name = "github.com/satori/go.uuid"
   packages = ["."]
   revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
@@ -151,6 +157,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a5688a1fc073696b264ed903c703edf179cca5332bfefde5ccfc0ec4a55db9a2"
+  inputs-digest = "d58e2102fe912fdb1f2c8c737d54d07094e019ee3c0f183bfc1d35746a9a6ac8"
   solver-name = "gps-cdcl"
   solver-version = 1
