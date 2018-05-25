@@ -41,3 +41,11 @@ func TestValidateWithRegionAndStreamNameAndInvalidBatchSize0(t *testing.T) {
 		t.Errorf("Expected an error")
 	}
 }
+
+func TestValidateWithRegionAndStreamNameAndInvalidPartitionKeyProvider(t *testing.T) {
+	config := &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", PartitionKeyProvider: "uuid"}
+	err := config.Validate()
+	if err == nil {
+		t.Errorf("Expected an error")
+	}
+}

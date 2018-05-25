@@ -3,6 +3,7 @@
 ARG GO_VERSION=${GO_VERSION:-1.10.2}
 # Used from within the second FROM
 ARG BEATS_VERSION=${BEATS_VERSION:-6.1.2}
+ARG BEAT_NAME=${BEAT_NAME:-filebeat}
 
 FROM golang:${GO_VERSION} AS awsbeats
 
@@ -15,6 +16,7 @@ WORKDIR /go/src/github.com/s12v/awsbeats
 ARG BEATS_VERSION=${BEATS_VERSION:-6.1.2}
 ARG GO_PLATFORM=${GO_PLATFORM:-linux-amd64}
 ARG AWSBEATS_VERSION=${AWSBEATS_VERSION:-1-snapshot}
+ARG BEAT_NAME=${BEAT_NAME:-filebeat}
 RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 RUN go get github.com/elastic/beats || true
 RUN /go/bin/dep ensure
@@ -34,13 +36,14 @@ WORKDIR /build
 ARG BEATS_VERSION=${BEATS_VERSION:-6.1.2}
 ARG GO_VERSION=${GO_VERSION:-1.10.2}
 ARG GO_PLATFORM=${GO_PLATFORM:-linux-amd64}
+ARG BEAT_NAME=${BEAT_NAME:-filebeat}
 
 RUN go get github.com/elastic/beats || true
 # Beats requires CGO for plugin support as per https://github.com/elastic/beats/commit/d21decb720e7fdeb986f4ebac413cc816353aa55
 RUN CGO_ENABLED=1 make beats && \
   pwd && find ./target
 
-FROM docker.elastic.co/beats/filebeat:${BEATS_VERSION}
+FROM docker.elastic.co/beats/${BEAT_NAME}:${BEATS_VERSION}
 
 LABEL maintainr "Yusuke KUOKA <ykuoka@gmail.com>"
 
@@ -48,10 +51,10 @@ ARG AWSBEATS_VERSION=${AWSBEATS_VERSION:-1-snapshot}
 ARG BEATS_VERSION=${BEATS_VERSION:-6.1.2}
 ARG GO_VERSION=${GO_VERSION:-1.10.2}
 ARG GO_PLATFORM=${GO_PLATFORM:-linux-amd64}
-ARG BEAT=${BEAT:-filebeat}
+ARG BEAT_NAME=${BEAT_NAME:-filebeat}
 
-COPY --from=awsbeats /go/src/github.com/s12v/awsbeats/target/kinesis-${AWSBEATS_VERSION}-${BEATS_VERSION}-go${GO_VERSION}-linux-amd64.so /usr/share/${BEAT}/kinesis.so
-COPY --from=beats /build/target/${BEAT}-${BEATS_VERSION}-go${GO_VERSION}-linux-amd64 /usr/share/${BEAT}/${BEAT}
+COPY --from=awsbeats /go/src/github.com/s12v/awsbeats/target/kinesis-${AWSBEATS_VERSION}-${BEATS_VERSION}-go${GO_VERSION}-linux-amd64.so /usr/share/${BEAT_NAME}/kinesis.so
+COPY --from=beats /build/target/${BEAT_NAME}-${BEATS_VERSION}-go${GO_VERSION}-linux-amd64 /usr/share/${BEAT_NAME}/${BEAT_NAME}
 
 # Usage:
 #   docker run --rm s12v/awsbeats:canary cat filebeat.yml > filebeat.yml

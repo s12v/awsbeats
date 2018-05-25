@@ -33,3 +33,7 @@ ignored = ["github.com/elastic/beats"]
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  name = "github.com/rs/xid"
+  version = "1.1.0"

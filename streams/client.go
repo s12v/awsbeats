@@ -15,27 +15,36 @@ import (
 )
 
 type client struct {
-	streams      *kinesis.Kinesis
-	streamName   string
-	partitionKey string
-	beatName     string
-	encoder      codec.Codec
-	timeout      time.Duration
-	observer     outputs.Observer
+	streams              *kinesis.Kinesis
+	streamName           string
+	partitionKeyProvider PartitionKeyProvider
+	beatName             string
+	encoder              codec.Codec
+	timeout              time.Duration
+	observer             outputs.Observer
 }
 
 func newClient(sess *session.Session, config *StreamsConfig, observer outputs.Observer, beat beat.Info) (*client, error) {
+	partitionKeyProvider := createPartitionKeyProvider(config)
 	client := &client{
-		streams:      kinesis.New(sess),
-		streamName:   config.DeliveryStreamName,
-		partitionKey: config.PartitionKey,
-		beatName:     beat.Beat,
-		encoder:      json.New(false, beat.Version),
-		timeout:      config.Timeout,
-		observer:     observer,
+		streams:              kinesis.New(sess),
+		streamName:           config.DeliveryStreamName,
+		partitionKeyProvider: partitionKeyProvider,
+		beatName:             beat.Beat,
+		encoder:              json.New(false, beat.Version),
+		timeout:              config.Timeout,
+		observer:             observer,
 	}
 
 	return client, nil
+}
+
+func createPartitionKeyProvider(config *StreamsConfig) PartitionKeyProvider {
+	if config.PartitionKeyProvider == "xid" {
+		return newXidPartitionKeyProvider()
+	} else {
+		return newFieldPartitionKeyProvider(config.PartitionKey)
+	}
 }
 
 func (client *client) Close() error {
@@ -100,14 +109,9 @@ func (client *client) mapEvent(event *publisher.Event) (*kinesis.PutRecordsReque
 		copy(buf, serializedEvent)
 	}
 
-	rawPartitionKey, err := event.Content.GetValue(client.partitionKey)
+	partitionKey, err := client.partitionKeyProvider.PartitionKeyFor(event)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get parition key: %v", err)
-	}
-
-	partitionKey, ok := rawPartitionKey.(string)
-	if !ok {
-		return nil, fmt.Errorf("failed to get partition key: %s(=%v) is found, but not a string", client.partitionKey, rawPartitionKey)
+		return nil, fmt.Errorf("failed to get parititon key: %v", err)
 	}
 
 	return &kinesis.PutRecordsRequestEntry{Data: buf, PartitionKey: aws.String(partitionKey)}, nil

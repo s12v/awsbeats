@@ -63,10 +63,18 @@ kinesis.so-1-snapshot-v6.1.3-go1.10rc1-linux-amd64
 
 ## Running in a docker container
 
-To build a docker image for awsbeats, run:
+To build a docker image for awsbeats, run `make dockerimage`.
+
+**filebeat**:
 
 ```
 make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 GOPATH=$HOME/go
+```
+
+**metricbeat**:
+
+```
+make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=metricbeat GOPATH=$HOME/go
 ```
 
 The resulting docker image is tagged `s12v/awsbeats:canary`.  It contains a custom build of filebeat and the plugin, along with all the relevant files from the official filebeat docker image.
@@ -86,7 +94,9 @@ Emit some line-delimited json log messages:
 hack/emit-ndjson-logs
 ```
 
-## Running on a Kubernetes cluster
+## Running awsbeats on a Kubernetes cluster
+
+### Filebeat
 
 Use the helm chart:
 
@@ -118,6 +128,19 @@ popd
 helm upgrade --install filebeat ./charts/stable/filebeat \
   -f values.yaml \
   --set rbac.enabled=true
+```
+
+### Metricbeat
+
+Edit the official Kubernetes manifests to use:
+
+- custom metricbeat docker image
+- `streams` output instead of the default `elasticsearch` one
+
+```
+( find ~/go/src/github.com/elastic/beats/deploy/kubernetes/metricbeat -name '*.yaml' -not -name metricbeat-daemonset-configmap.yaml -exec bash -c 'sed -e '"'"'s/image: .*/image: "kubeaws\/awsbeats:metricbeat-canary"/g'"'"' {} | sed -e '"'"'s/"-e",/"-e", "-plugin", "kinesis.so",/g'"'" \; -exec echo '---' \; ) > metricbeat.all.yaml
+
+kubectl create -f example/metricbeat/metricbeat.configmap.yaml -f metricbeat.all.yaml
 ```
 
 ### Trouble-shooting
