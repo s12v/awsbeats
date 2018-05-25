@@ -15,10 +15,43 @@ func (mock MockCodec) Encode(index string, event *beat.Event) ([]byte, error) {
 	return []byte("boom"), nil
 }
 
+func TestCreateXidPartitionKeyProvider(t *testing.T) {
+	fieldForPartitionKey := "mypartitionkey"
+	expectedPartitionKey := "foobar"
+	config := &StreamsConfig{PartitionKeyProvider: "xid"}
+	event := &publisher.Event{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}}
+
+	xidProvider := createPartitionKeyProvider(config)
+	xidKey, err := xidProvider.PartitionKeyFor(event)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if xidKey == "" || xidKey == expectedPartitionKey {
+		t.Fatalf("uenxpected partition key: %s", xidKey)
+	}
+}
+
+func TestCreateFieldPartitionKeyProvider(t *testing.T) {
+	fieldForPartitionKey := "mypartitionkey"
+	expectedPartitionKey := "foobar"
+	config := &StreamsConfig{PartitionKey: fieldForPartitionKey}
+	event := &publisher.Event{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}}
+	fieldProvider := createPartitionKeyProvider(config)
+	fieldKey, err := fieldProvider.PartitionKeyFor(event)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if fieldKey != expectedPartitionKey {
+		t.Fatalf("uenxpected partition key: %s", fieldKey)
+
+	}
+}
+
 func TestMapEvent(t *testing.T) {
 	fieldForPartitionKey := "mypartitionkey"
 	expectedPartitionKey := "foobar"
-	client := client{encoder: MockCodec{}, partitionKey: fieldForPartitionKey}
+	provider := newFieldPartitionKeyProvider(fieldForPartitionKey)
+	client := client{encoder: MockCodec{}, partitionKeyProvider: provider}
 	event := &publisher.Event{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}}
 	record, err := client.mapEvent(event)
 
@@ -39,7 +72,9 @@ func TestMapEvent(t *testing.T) {
 func TestMapEvents(t *testing.T) {
 	fieldForPartitionKey := "mypartitionkey"
 	expectedPartitionKey := "foobar"
-	client := client{encoder: MockCodec{}, partitionKey: fieldForPartitionKey}
+	provider := newFieldPartitionKeyProvider(fieldForPartitionKey)
+
+	client := client{encoder: MockCodec{}, partitionKeyProvider: provider}
 	event := publisher.Event{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}}
 	events := []publisher.Event{event}
 	records, _ := client.mapEvents(events)
