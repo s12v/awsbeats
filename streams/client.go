@@ -130,6 +130,11 @@ func processFailedDeliveries(res *kinesis.PutRecordsOutput, batch publisher.Batc
 		failedEvents := make([]publisher.Event, 0)
 		records := res.Records
 		for i, r := range records {
+			if r == nil {
+				// See https://github.com/s12v/awsbeats/issues/27 for more info
+				logp.Warn("no record returned from kinesis for event: ", events[i])
+				continue
+			}
 			if *r.ErrorCode != "" {
 				failedEvents = append(failedEvents, events[i])
 			}
