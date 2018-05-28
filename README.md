@@ -120,10 +120,9 @@ config:
     partition_key: mykey
 EOS
 
-git clone git@github.com:mumoshu/charts.git charts
-pushd charts
-git checkout filebeat-plugins
-popd
+# No need to do this once stable/filebeat v0.3.0 is published
+# See https://github.com/kubernetes/charts/pull/5698
+git clone git@github.com:kubernetes/charts.git charts
 
 helm upgrade --install filebeat ./charts/stable/filebeat \
   -f values.yaml \
