@@ -3,10 +3,10 @@
 
 # AWS Beats
 
-Experimental [Filebeat](https://github.com/elastic/beats) output plugin.
-Supports AWS Kinesis Data Firehose streams.
+Experimental [Beat](https://github.com/elastic/beats) output plugin.
+Tested with Filebeat and Metricbeat. Supports AWS Kinesis Data Streams and Data Firehose.
 
-__NOTE: Filebeat and plugin should be built using the same Golang version.__
+__NOTE: Beat and the plugin should be built using the same Golang version.__
 
 ## Quick start
 
