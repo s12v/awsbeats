@@ -77,10 +77,14 @@ func TestMapEvents(t *testing.T) {
 	client := client{encoder: MockCodec{}, partitionKeyProvider: provider}
 	event := publisher.Event{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}}
 	events := []publisher.Event{event}
-	records, _ := client.mapEvents(events)
+	okEvents, records, _ := client.mapEvents(events)
 
 	if len(records) != 1 {
 		t.Errorf("Expected 1 records, got %v", len(records))
+	}
+
+	if len(okEvents) != 1 {
+		t.Errorf("Expected 1 ok events, got %v", len(okEvents))
 	}
 
 	if string(records[0].Data) != "boom" {

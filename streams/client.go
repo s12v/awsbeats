@@ -57,30 +57,48 @@ func (client *client) Connect() error {
 
 func (client *client) Publish(batch publisher.Batch) error {
 	events := batch.Events()
+	rest, err := client.publishEvents(events)
+	if len(rest) == 0 {
+		// We have to ACK only when all the submission succeeded
+		// Ref: https://github.com/elastic/beats/blob/c4af03c51373c1de7daaca660f5d21b3f602771c/libbeat/outputs/elasticsearch/client.go#L232
+		batch.ACK()
+	} else {
+		// Mark the failed events to retry
+		// Ref: https://github.com/elastic/beats/blob/c4af03c51373c1de7daaca660f5d21b3f602771c/libbeat/outputs/elasticsearch/client.go#L234
+		batch.RetryEvents(rest)
+	}
+	return err
+}
+
+func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event, error) {
 	observer := client.observer
 	observer.NewBatch(len(events))
 
 	logp.Debug("kinesis", "received events: %v", events)
-	records, dropped := client.mapEvents(events)
-	logp.Debug("kinesis", "mapped to records: %v", records)
-	res, err := client.sendRecords(records)
-	if err != nil {
-		logp.Critical("Unable to send batch: %v", err)
-		observer.Dropped(len(events))
-		return err
+	okEvents, records, dropped := client.mapEvents(events)
+	if dropped > 0 {
+		logp.Debug("kinesis", "sent %d records: %v", len(records), records)
+		observer.Dropped(dropped)
+		observer.Acked(len(okEvents))
 	}
-	processFailedDeliveries(res, batch)
-
-	batch.ACK()
-	logp.Debug("kinesis", "sent %d records: %v", len(records), records)
-	observer.Dropped(dropped)
-	observer.Acked(len(events) - dropped)
-	return nil
+	logp.Debug("kinesis", "mapped to records: %v", records)
+	res, err := client.putKinesisRecords(records)
+	if err != nil {
+		if res == nil {
+			logp.Critical("permanently failed to send %d records: %v", len(events), err)
+			return []publisher.Event{}, nil
+		}
+		failed := collectFailedEvents(res, events)
+		logp.Info("retrying %d events on error: %v", len(failed), err)
+		return failed, err
+	}
+	return []publisher.Event{}, nil
 }
 
-func (client *client) mapEvents(events []publisher.Event) ([]*kinesis.PutRecordsRequestEntry, int) {
+func (client *client) mapEvents(events []publisher.Event) ([]publisher.Event, []*kinesis.PutRecordsRequestEntry, int) {
 	dropped := 0
 	records := make([]*kinesis.PutRecordsRequestEntry, 0, len(events))
+	okEvents := make([]publisher.Event, 0, len(events))
 	for i := range events {
 		event := events[i]
 		record, err := client.mapEvent(&event)
@@ -88,11 +106,11 @@ func (client *client) mapEvents(events []publisher.Event) ([]*kinesis.PutRecords
 			logp.Debug("kinesis", "failed to map event(%v): %v", event, err)
 			dropped++
 		} else {
+			okEvents = append(okEvents, event)
 			records = append(records, record)
 		}
 	}
-
-	return records, dropped
+	return okEvents, records, dropped
 }
 
 func (client *client) mapEvent(event *publisher.Event) (*kinesis.PutRecordsRequestEntry, error) {
@@ -116,17 +134,20 @@ func (client *client) mapEvent(event *publisher.Event) (*kinesis.PutRecordsReque
 
 	return &kinesis.PutRecordsRequestEntry{Data: buf, PartitionKey: aws.String(partitionKey)}, nil
 }
-func (client *client) sendRecords(records []*kinesis.PutRecordsRequestEntry) (*kinesis.PutRecordsOutput, error) {
+func (client *client) putKinesisRecords(records []*kinesis.PutRecordsRequestEntry) (*kinesis.PutRecordsOutput, error) {
 	request := kinesis.PutRecordsInput{
 		StreamName: &client.streamName,
 		Records:    records,
 	}
-	return client.streams.PutRecords(&request)
+	res, err := client.streams.PutRecords(&request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to put records: %v", err)
+	}
+	return res, nil
 }
 
-func processFailedDeliveries(res *kinesis.PutRecordsOutput, batch publisher.Batch) {
+func collectFailedEvents(res *kinesis.PutRecordsOutput, events []publisher.Event) []publisher.Event {
 	if *res.FailedRecordCount > 0 {
-		events := batch.Events()
 		failedEvents := make([]publisher.Event, 0)
 		records := res.Records
 		for i, r := range records {
@@ -139,11 +160,8 @@ func processFailedDeliveries(res *kinesis.PutRecordsOutput, batch publisher.Batc
 				failedEvents = append(failedEvents, events[i])
 			}
 		}
-
-		if len(failedEvents) > 0 {
-			logp.Warn("Retrying %d events", len(failedEvents))
-			batch.RetryEvents(failedEvents)
-			return
-		}
+		logp.Warn("Retrying %d events", len(failedEvents))
+		return failedEvents
 	}
+	return []publisher.Event{}
 }
