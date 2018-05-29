@@ -123,8 +123,15 @@ func (client *client) mapEvent(event *publisher.Event) (*kinesis.PutRecordsReque
 		}
 		// See https://github.com/elastic/beats/blob/5a6630a8bc9b9caf312978f57d1d9193bdab1ac7/libbeat/outputs/kafka/client.go#L163-L164
 		// You need to copy the byte data like this. Otherwise you see strange issues like all the records sent in a same batch has the same Data.
-		buf = make([]byte, len(serializedEvent))
+		buf = make([]byte, len(serializedEvent)+1)
 		copy(buf, serializedEvent)
+		// Firehose doesn't automatically add trailing new-line on after each record.
+		// This ends up a stream->firehose->s3 pipeline to produce useless s3 objects.
+		// No ndjson, but a sequence of json objects without separators...
+		// Fix it just adding a new-line.
+		//
+		// See https://stackoverflow.com/questions/43010117/writing-properly-formatted-json-to-s3-to-load-in-athena-redshift
+		buf[len(buf)-1] = byte('\n')
 	}
 
 	partitionKey, err := client.partitionKeyProvider.PartitionKeyFor(event)
