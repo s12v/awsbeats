@@ -15,13 +15,17 @@ import (
 )
 
 type client struct {
-	streams              *kinesis.Kinesis
+	streams              kinesisStreamsClient
 	streamName           string
 	partitionKeyProvider PartitionKeyProvider
 	beatName             string
 	encoder              codec.Codec
 	timeout              time.Duration
 	observer             outputs.Observer
+}
+
+type kinesisStreamsClient interface {
+	PutRecords(input *kinesis.PutRecordsInput) (*kinesis.PutRecordsOutput, error)
 }
 
 func newClient(sess *session.Session, config *StreamsConfig, observer outputs.Observer, beat beat.Info) (*client, error) {
@@ -83,16 +87,16 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 	}
 	logp.Debug("kinesis", "mapped to records: %v", records)
 	res, err := client.putKinesisRecords(records)
-	if err != nil {
-		if res == nil {
-			logp.Critical("permanently failed to send %d records: %v", len(events), err)
-			return []publisher.Event{}, nil
-		}
-		failed := collectFailedEvents(res, events)
-		logp.Info("retrying %d events on error: %v", len(failed), err)
-		return failed, err
+	var failed []publisher.Event
+	if res == nil {
+		failed = events
+	} else {
+		failed = collectFailedEvents(res, events)
 	}
-	return []publisher.Event{}, nil
+	if len(failed) > 0 {
+		logp.Info("retrying %d events on error: %v", len(failed), err)
+	}
+	return failed, err
 }
 
 func (client *client) mapEvents(events []publisher.Event) ([]publisher.Event, []*kinesis.PutRecordsRequestEntry, int) {
@@ -148,13 +152,13 @@ func (client *client) putKinesisRecords(records []*kinesis.PutRecordsRequestEntr
 	}
 	res, err := client.streams.PutRecords(&request)
 	if err != nil {
-		return nil, fmt.Errorf("failed to put records: %v", err)
+		return res, fmt.Errorf("failed to put records: %v", err)
 	}
 	return res, nil
 }
 
 func collectFailedEvents(res *kinesis.PutRecordsOutput, events []publisher.Event) []publisher.Event {
-	if *res.FailedRecordCount > 0 {
+	if res.FailedRecordCount != nil && *res.FailedRecordCount > 0 {
 		failedEvents := make([]publisher.Event, 0)
 		records := res.Records
 		for i, r := range records {
