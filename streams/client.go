@@ -61,7 +61,7 @@ func (client *client) Connect() error {
 
 func (client *client) Publish(batch publisher.Batch) error {
 	events := batch.Events()
-	rest, err := client.publishEvents(events)
+	rest, _ := client.publishEvents(events)
 	if len(rest) == 0 {
 		// We have to ACK only when all the submission succeeded
 		// Ref: https://github.com/elastic/beats/blob/c4af03c51373c1de7daaca660f5d21b3f602771c/libbeat/outputs/elasticsearch/client.go#L232
@@ -71,7 +71,9 @@ func (client *client) Publish(batch publisher.Batch) error {
 		// Ref: https://github.com/elastic/beats/blob/c4af03c51373c1de7daaca660f5d21b3f602771c/libbeat/outputs/elasticsearch/client.go#L234
 		batch.RetryEvents(rest)
 	}
-	return err
+	// This shouldn't be an error object according to other official beats' implementations
+	// Ref: https://github.com/elastic/beats/blob/c4af03c51373c1de7daaca660f5d21b3f602771c/libbeat/outputs/kafka/client.go#L119
+	return nil
 }
 
 func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event, error) {
@@ -87,11 +89,9 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 	}
 	logp.Debug("kinesis", "mapped to records: %v", records)
 	res, err := client.putKinesisRecords(records)
-	var failed []publisher.Event
-	if res == nil {
+	failed := collectFailedEvents(res, events)
+	if err != nil && len(failed) == 0 {
 		failed = events
-	} else {
-		failed = collectFailedEvents(res, events)
 	}
 	if len(failed) > 0 {
 		logp.Info("retrying %d events on error: %v", len(failed), err)
