@@ -71,6 +71,12 @@ To build a docker image for awsbeats, run `make dockerimage`.
 make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 GOPATH=$HOME/go
 ```
 
+There is also a convenient make target `filebeat-image` with sane defaults:
+
+```console
+make filebeat
+```
+
 **metricbeat**:
 
 ```

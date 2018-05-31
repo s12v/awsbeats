@@ -52,3 +52,7 @@ endif
 .PHONY: dockerimage
 dockerimage:
 	docker build --build-arg AWSBEATS_VERSION=$(AWSBEATS_VERSION) --build-arg GO_VERSION=$(GO_VERSION) --build-arg BEATS_VERSION=$(BEATS_VERSION) --build-arg BEAT_NAME=$(BEAT_NAME) -t $(DOCKER_IMAGE):$(DOCKER_TAG) .
+
+.PHONY: filebeat-image
+filebeat-image:
+	@bash -c 'make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=filebeat AWSBEATS_VERSION=$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
