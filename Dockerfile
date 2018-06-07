@@ -2,14 +2,16 @@
 # Used from within the first FROM
 ARG GO_VERSION=${GO_VERSION:-1.10.2}
 # Used from within the second FROM
-ARG BEATS_VERSION=${BEATS_VERSION:-6.1.2}
-ARG BEAT_NAME=${BEAT_NAME:-filebeat}
+ARG BEAT_DOCKER_IMAGE
 
 FROM golang:${GO_VERSION} AS awsbeats
 
 LABEL maintainr "Yusuke KUOKA <ykuoka@gmail.com>"
 
-ADD . /go/src/github.com/s12v/awsbeats
+# "MAINTAINER" is deprecated in favor of the above label. But required to make codacy happy
+MAINTAINER Yusuke KUOKA <ykuoka@gmail.com>
+
+COPY . /go/src/github.com/s12v/awsbeats
 
 WORKDIR /go/src/github.com/s12v/awsbeats
 
@@ -29,7 +31,7 @@ FROM golang:${GO_VERSION} AS beats
 
 LABEL maintainr "Yusuke KUOKA <ykuoka@gmail.com>"
 
-ADD Makefile /build/Makefile
+COPY Makefile /build/Makefile
 
 WORKDIR /build
 
@@ -37,13 +39,15 @@ ARG BEATS_VERSION=${BEATS_VERSION:-6.1.2}
 ARG GO_VERSION=${GO_VERSION:-1.10.2}
 ARG GO_PLATFORM=${GO_PLATFORM:-linux-amd64}
 ARG BEAT_NAME=${BEAT_NAME:-filebeat}
+ARG BEAT_GITHUB_REPO
+ARG BEAT_GO_PKG
 
-RUN go get github.com/elastic/beats || true
+#RUN go get github.com/elastic/beats || true
 # Beats requires CGO for plugin support as per https://github.com/elastic/beats/commit/d21decb720e7fdeb986f4ebac413cc816353aa55
 RUN CGO_ENABLED=1 make beats && \
   pwd && find ./target
 
-FROM docker.elastic.co/beats/${BEAT_NAME}:${BEATS_VERSION}
+FROM ${BEAT_DOCKER_IMAGE}
 
 LABEL maintainr "Yusuke KUOKA <ykuoka@gmail.com>"
 

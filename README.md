@@ -65,7 +65,7 @@ kinesis.so-1-snapshot-v6.1.3-go1.10rc1-linux-amd64
 
 To build a docker image for awsbeats, run `make dockerimage`.
 
-**filebeat**:
+### filebeat
 
 ```
 make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 GOPATH=$HOME/go
@@ -74,16 +74,10 @@ make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 GOPATH=$HOME/go
 There is also a convenient make target `filebeat-image` with sane defaults:
 
 ```console
-make filebeat
+make filebeat-image
 ```
 
-**metricbeat**:
-
-```
-make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=metricbeat GOPATH=$HOME/go
-```
-
-The resulting docker image is tagged `s12v/awsbeats:canary`.  It contains a custom build of filebeat and the plugin, along with all the relevant files from the official filebeat docker image.
+The resulting docker image is tagged `s12v/awsbeats:filebeat-canary`.  It contains a custom build of filebeat and the plugin, along with all the relevant files from the official filebeat docker image.
 
 To try running it, provide AWS credentials via e.g. envvars and run `hack/dockerized-filebeat`:
 
@@ -98,6 +92,26 @@ Emit some line-delimited json log messages:
 
 ```
 hack/emit-ndjson-logs
+```
+
+### metricbeat
+
+**metricbeat**:
+
+```
+make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=metricbeat GOPATH=$HOME/go
+
+# Or:
+
+make metricbeat-image
+```
+
+### apm-server
+
+```
+make apm-server-image
+
+hack/containerized-apm-server
 ```
 
 ## Running awsbeats on a Kubernetes cluster
