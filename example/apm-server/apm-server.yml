@@ -1,5 +1,13 @@
 processors:
 - add_cloud_metadata:
+# Match originating pod enrich apm events with metadata from Kubernetes
+# See https://github.com/elastic/apm-server/issues/349 for more details
+#- add_kubernetes_metadata:
+#    indexers:
+#      - ip_port:
+#    matchers:
+#      - fields:
+#          lookup_fields: ["context.system.ip"]
 
 output:
   streams:
