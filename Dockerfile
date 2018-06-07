@@ -8,7 +8,10 @@ FROM golang:${GO_VERSION} AS awsbeats
 
 LABEL maintainr "Yusuke KUOKA <ykuoka@gmail.com>"
 
-ADD . /go/src/github.com/s12v/awsbeats
+# "MAINTAINER" is deprecated in favor of the above label. But required to make codacy happy
+MAINTAINER Yusuke KUOKA <ykuoka@gmail.com>
+
+COPY . /go/src/github.com/s12v/awsbeats
 
 WORKDIR /go/src/github.com/s12v/awsbeats
 
@@ -28,7 +31,7 @@ FROM golang:${GO_VERSION} AS beats
 
 LABEL maintainr "Yusuke KUOKA <ykuoka@gmail.com>"
 
-ADD Makefile /build/Makefile
+COPY Makefile /build/Makefile
 
 WORKDIR /build
 
