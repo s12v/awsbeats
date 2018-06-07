@@ -1,0 +1,13 @@
+processors:
+- add_cloud_metadata:
+
+output:
+  streams:
+    region: ap-northeast-1
+    stream_name: kuokatest1
+    partition_key_provider: xid
+
+queue.mem:
+  events: 4096
+  flush.min_events: 5
+  flush.timeout: 3s
