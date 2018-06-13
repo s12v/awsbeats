@@ -197,6 +197,38 @@ helm upgrade --install apm-server ./charts/stable/apm-server \
   --set rbac.enabled=true
 ```
 
+### Heartbeat
+
+```
+cat << EOS > values.yaml
+image:
+  repository: kubeaws/awsbeats
+  tag: heartbeat-canary
+  pullPolicy: Always
+
+plugins:
+  - kinesis.so
+
+config:
+  output.file:
+    enabled: false
+  output.streams:
+    enabled: true
+    region: ap-northeast-1
+    stream_name: test1
+    partition_key: mykey
+EOS
+
+# No need to do this once stable/heartbeat is merged
+# See https://github.com/kubernetes/charts/pull/5766
+git clone git@github.com:mumoshu/charts.git charts
+git checkout heartbeat
+
+helm upgrade --install heartbeat ./charts/stable/heartbeat \
+  -f values.yaml \
+  --set rbac.enabled=true
+```
+
 ### Metricbeat
 
 Edit the official Kubernetes manifests to use:
