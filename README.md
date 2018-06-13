@@ -4,7 +4,7 @@
 # AWS Beats
 
 Experimental [Beat](https://github.com/elastic/beats) output plugin.
-Tested with Filebeat and Metricbeat. Supports AWS Kinesis Data Streams and Data Firehose.
+Tested with Filebeat, Metricbeat, Auditbeat, Heartbeat, APM Server. Supports AWS Kinesis Data Streams and Data Firehose.
 
 __NOTE: Beat and the plugin should be built using the same Golang version.__
 
@@ -104,6 +104,8 @@ make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=metricbeat GOPA
 # Or:
 
 make metricbeat-image
+
+hack/containerized-metricbeat
 ```
 
 ### apm-server
