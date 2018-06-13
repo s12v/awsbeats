@@ -114,6 +114,14 @@ make apm-server-image
 hack/containerized-apm-server
 ```
 
+### auditbeat
+
+```
+make auditbeat-image
+
+hack/containerized-auditbeat
+```
+
 ## Running awsbeats on a Kubernetes cluster
 
 ### Filebeat
