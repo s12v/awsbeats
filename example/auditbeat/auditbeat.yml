@@ -1,0 +1,55 @@
+auditbeat.modules:
+
+- module: auditd
+  # keep this 0 and be more selective in auditd rules to rate-limit without dropping audit events
+  rate_limit: 0
+  # maximum number of audit messages that will be buffered by the kernel
+  backlog_limit: 8196
+  # See https://www.elastic.co/guide/en/beats/auditbeat/current/auditbeat-module-auditd.html for more info
+  audit_rules: |
+    # Things that affect identity.
+    -w /etc/group -p wa -k identity
+    -w /etc/passwd -p wa -k identity
+    -w /etc/gshadow -p wa -k identity
+    -w /etc/shadow -p wa -k identity
+
+    # Unauthorized access attempts to files (unsuccessful).
+    -a always,exit -F arch=b32 -S open,creat,truncate,ftruncate,openat,open_by_handle_at -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -F key=access
+    -a always,exit -F arch=b32 -S open,creat,truncate,ftruncate,openat,open_by_handle_at -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -F key=access
+    -a always,exit -F arch=b64 -S open,truncate,ftruncate,creat,openat,open_by_handle_at -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -F key=access
+    -a always,exit -F arch=b64 -S open,truncate,ftruncate,creat,openat,open_by_handle_at -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -F key=access
+
+  # for development
+  failure_mode: log
+  include_raw_message: true
+  include_warnings: true
+
+- module: file_integrity
+  paths:
+  - /bin
+  - /usr/bin
+  - /sbin
+  - /usr/sbin
+  - /etc
+
+processors:
+- add_cloud_metadata:
+# Match originating pod enrich apm events with metadata from Kubernetes
+# See https://github.com/elastic/apm-server/issues/349 for more details
+#- add_kubernetes_metadata:
+#    indexers:
+#      - ip_port:
+#    matchers:
+#      - fields:
+#          lookup_fields: ["context.system.ip"]
+
+output:
+  streams:
+    region: ap-northeast-1
+    stream_name: kuokatest1
+    partition_key_provider: xid
+
+queue.mem:
+  events: 4096
+  flush.min_events: 5
+  flush.timeout: 3s
