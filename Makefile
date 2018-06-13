@@ -86,6 +86,10 @@ auditbeat-image:
 filebeat-image:
 	@bash -c 'make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=filebeat AWSBEATS_VERSION=$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
 
+.PHONY: heartbeat-image
+heartbeat-image:
+	@bash -c 'make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=heartbeat AWSBEATS_VERSION=$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
+
 .PHONY: metricbeat-image
 metricbeat-image:
 	@bash -c 'make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=metricbeat AWSBEATS_VERSION=$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'

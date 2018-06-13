@@ -1,0 +1,41 @@
+heartbeat.monitors:
+- type: icmp
+  schedule: '*/5 * * * * * *'
+  hosts: ["localhost"]
+  ipv4: true
+  timeout: 16s
+  wait: 1s
+- type: tcp
+  schedule: '@every 5s'
+  hosts: ["myhost:7"]  # default TCP Echo Protocol
+  check.send: "Check"
+  check.receive: "Check"
+- type: http
+  schedule: '@every 5s'
+  urls: ["http://localhost:80/service/status"]
+  check.response.status: 200
+
+heartbeat.scheduler:
+  limit: 10
+
+processors:
+- add_cloud_metadata:
+# Match originating pod enrich apm events with metadata from Kubernetes
+# See https://github.com/elastic/apm-server/issues/349 for more details
+#- add_kubernetes_metadata:
+#    indexers:
+#      - ip_port:
+#    matchers:
+#      - fields:
+#          lookup_fields: ["context.system.ip"]
+
+output:
+  streams:
+    region: ap-northeast-1
+    stream_name: kuokatest1
+    partition_key_provider: xid
+
+queue.mem:
+  events: 4096
+  flush.min_events: 5
+  flush.timeout: 3s

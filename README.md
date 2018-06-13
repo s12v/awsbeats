@@ -122,6 +122,14 @@ make auditbeat-image
 hack/containerized-auditbeat
 ```
 
+### heartbeat
+
+```
+make heartbeat-image
+
+hack/containerized-heartbeat
+```
+
 ## Running awsbeats on a Kubernetes cluster
 
 ### Filebeat
