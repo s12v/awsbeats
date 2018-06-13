@@ -165,6 +165,38 @@ helm upgrade --install filebeat ./charts/stable/filebeat \
   --set rbac.enabled=true
 ```
 
+### APM Server
+
+```
+cat << EOS > values.yaml
+image:
+  repository: kubeaws/awsbeats
+  tag: apm-server-canary
+  pullPolicy: Always
+
+plugins:
+  - kinesis.so
+
+config:
+  output.file:
+    enabled: false
+  output.streams:
+    enabled: true
+    region: ap-northeast-1
+    stream_name: test1
+    partition_key: mykey
+EOS
+
+# No need to do this once stable/apm-server is merged
+# See https://github.com/kubernetes/charts/pull/6058
+git clone git@github.com:mumoshu/charts.git charts
+git checkout apm-server
+
+helm upgrade --install apm-server ./charts/stable/apm-server \
+  -f values.yaml \
+  --set rbac.enabled=true
+```
+
 ### Metricbeat
 
 Edit the official Kubernetes manifests to use:
