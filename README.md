@@ -68,7 +68,7 @@ To build a docker image for awsbeats, run `make dockerimage`.
 ### filebeat
 
 ```
-make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 GOPATH=$HOME/go
+make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=filebeat GOPATH=$HOME/go
 ```
 
 There is also a convenient make target `filebeat-image` with sane defaults:
@@ -96,13 +96,7 @@ hack/emit-ndjson-logs
 
 ### metricbeat
 
-**metricbeat**:
-
 ```
-make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=metricbeat GOPATH=$HOME/go
-
-# Or:
-
 make metricbeat-image
 
 hack/containerized-metricbeat
