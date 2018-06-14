@@ -19,14 +19,13 @@ ARG BEATS_VERSION=${BEATS_VERSION:-6.1.2}
 ARG GO_PLATFORM=${GO_PLATFORM:-linux-amd64}
 ARG AWSBEATS_VERSION=${AWSBEATS_VERSION:-1-snapshot}
 ARG BEAT_NAME=${BEAT_NAME:-filebeat}
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+RUN curl --verbose --fail https://raw.githubusercontent.com/golang/dep/master/install.sh -o install.sh && sh install.sh && rm install.sh
 RUN go get github.com/elastic/beats || true
 RUN /go/bin/dep ensure
 # You need to enable CGO on both the plugin and the beat.
 # Otherwise, for example, filebeat w/ CGO fails to load the plugin w/o CGO, emitting an error like:
 #   Exiting: plugin.Open("kinesis"): plugin was built with a different version of package net
 RUN CGO_ENABLED=1 GOOS=linux make build
-
 FROM golang:${GO_VERSION} AS beats
 
 LABEL maintainr "Yusuke KUOKA <ykuoka@gmail.com>"

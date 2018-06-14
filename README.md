@@ -4,7 +4,7 @@
 # AWS Beats
 
 Experimental [Beat](https://github.com/elastic/beats) output plugin.
-Tested with Filebeat and Metricbeat. Supports AWS Kinesis Data Streams and Data Firehose.
+Tested with Filebeat, Metricbeat, Auditbeat, Heartbeat, APM Server. Supports AWS Kinesis Data Streams and Data Firehose.
 
 __NOTE: Beat and the plugin should be built using the same Golang version.__
 
@@ -68,7 +68,7 @@ To build a docker image for awsbeats, run `make dockerimage`.
 ### filebeat
 
 ```
-make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 GOPATH=$HOME/go
+make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=filebeat GOPATH=$HOME/go
 ```
 
 There is also a convenient make target `filebeat-image` with sane defaults:
@@ -96,14 +96,10 @@ hack/emit-ndjson-logs
 
 ### metricbeat
 
-**metricbeat**:
-
 ```
-make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=metricbeat GOPATH=$HOME/go
-
-# Or:
-
 make metricbeat-image
+
+hack/containerized-metricbeat
 ```
 
 ### apm-server
@@ -120,6 +116,14 @@ hack/containerized-apm-server
 make auditbeat-image
 
 hack/containerized-auditbeat
+```
+
+### heartbeat
+
+```
+make heartbeat-image
+
+hack/containerized-heartbeat
 ```
 
 ## Running awsbeats on a Kubernetes cluster
@@ -153,6 +157,102 @@ EOS
 git clone git@github.com:kubernetes/charts.git charts
 
 helm upgrade --install filebeat ./charts/stable/filebeat \
+  -f values.yaml \
+  --set rbac.enabled=true
+```
+
+### APM Server
+
+```
+cat << EOS > values.yaml
+image:
+  repository: kubeaws/awsbeats
+  tag: apm-server-canary
+  pullPolicy: Always
+
+plugins:
+  - kinesis.so
+
+config:
+  output.file:
+    enabled: false
+  output.streams:
+    enabled: true
+    region: ap-northeast-1
+    stream_name: test1
+    partition_key: mykey
+EOS
+
+# No need to do this once stable/apm-server is merged
+# See https://github.com/kubernetes/charts/pull/6058
+git clone git@github.com:mumoshu/charts.git charts
+git checkout apm-server
+
+helm upgrade --install apm-server ./charts/stable/apm-server \
+  -f values.yaml \
+  --set rbac.enabled=true
+```
+
+### Auditbeat
+
+```
+cat << EOS > values.yaml
+image:
+  repository: kubeaws/awsbeats
+  tag: auditbeat-canary
+  pullPolicy: Always
+
+plugins:
+  - kinesis.so
+
+config:
+  output.file:
+    enabled: false
+  output.streams:
+    enabled: true
+    region: ap-northeast-1
+    stream_name: test1
+    partition_key: mykey
+EOS
+
+# No need to do this once stable/auditbeat is merged
+# See https://github.com/kubernetes/charts/pull/6089
+git clone git@github.com:mumoshu/charts.git charts
+git checkout auditbeat
+
+helm upgrade --install auditbeat ./charts/stable/auditbeat \
+  -f values.yaml \
+  --set rbac.enabled=true
+```
+
+### Heartbeat
+
+```
+cat << EOS > values.yaml
+image:
+  repository: kubeaws/awsbeats
+  tag: heartbeat-canary
+  pullPolicy: Always
+
+plugins:
+  - kinesis.so
+
+config:
+  output.file:
+    enabled: false
+  output.streams:
+    enabled: true
+    region: ap-northeast-1
+    stream_name: test1
+    partition_key: mykey
+EOS
+
+# No need to do this once stable/heartbeat is merged
+# See https://github.com/kubernetes/charts/pull/5766
+git clone git@github.com:mumoshu/charts.git charts
+git checkout heartbeat
+
+helm upgrade --install heartbeat ./charts/stable/heartbeat \
   -f values.yaml \
   --set rbac.enabled=true
 ```

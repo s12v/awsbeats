@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+docker run \
+  --rm \
+  -v $(pwd)/logs:/mnt/log/  \
+  -v $(pwd)/example/heartbeat/data:/var/lib/beat \
+  -v $(pwd)/example/heartbeat:/etc/heartbeat \
+  -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+  -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+  s12v/awsbeats:heartbeat-canary \
+  heartbeat \
+  --plugin kinesis.so \
+  -e \
+  -d '*' \
+  -c /etc/heartbeat/heartbeat.yml \
+  --strict.perms=false
+
+# Note that `strict.perms` seems to be required due to https://discuss.elastic.co/t/volume-mapped-filebeat-yml-permissions-from-docker-on-windows-host/91893/2
+
+# --pid=host, AUDIT_CONTROL, and AUDIT_READ are reequired in order to avoid the following startup error
+# 2018-06-13T03:23:30.026ZDEBUG[file_integrity]file_integrity/metricset.go:86Initialized the file event reader. Running as euid=0
+# 2018-06-13T03:23:30.026ZERRORinstance/beat.go:667Exiting: 1 error: 1 error: failed to create audit client: failed to get audit status: operation not permitted
+# Exiting: 1 error: 1 error: failed to create audit client: failed to get audit status: operation not permitted
+#
+# See https://github.com/elastic/beats-docker/issues/25 for more info
