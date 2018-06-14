@@ -2,12 +2,12 @@ MAKE_VARIABLES := $(.VARIABLES)
 
 GO_VERSION=$(shell go version | cut -d ' ' -f 3 | sed -e 's/ /-/g' | sed -e 's/\//-/g' | sed -e 's/^go//g')
 GO_PLATFORM ?= $(shell go version | cut -d ' ' -f 4 | sed -e 's/ /-/g' | sed -e 's/\//-/g')
-BEATS_VERSION ?= "master"
+BEATS_VERSION ?= "6.3.0"
 BEATS_TAG ?= $(shell echo ${BEATS_VERSION} | sed 's/[^[:digit:]]*\([[:digit:]]*\(\.[[:digit:]]*\)\)/v\1/')
-AWSBEATS_VERSION ?= "1-snapshot"
+AWSBEATS_VERSION ?= $(shell script/version)
 BEAT_NAME ?= "filebeat"
 DOCKER_IMAGE ?= s12v/awsbeats
-DOCKER_TAG ?= $(BEAT_NAME)-canary
+DOCKER_TAG ?= $(AWSBEATS_VERSION)-$(BEAT_NAME)-$(BEATS_VERSION)
 BEAT_GITHUB_REPO ?= github.com/elastic/beats
 BEAT_GO_PKG ?= $(BEAT_GITHUB_REPO)/$(BEAT_NAME)
 BEAT_DOCKER_IMAGE ?= docker.elastic.co/beats/$(BEAT_NAME):$(BEATS_VERSION)
@@ -80,20 +80,20 @@ dockerimage:
 
 .PHONY: auditbeat-image
 auditbeat-image:
-	@bash -c 'make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=auditbeat AWSBEATS_VERSION=$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
+	bash -c 'make dockerimage BEATS_VERSION=$(BEATS_VERSION) GO_VERSION=1.10.2 BEAT_NAME=auditbeat AWSBEATS_VERSION=\$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
 
 .PHONY: filebeat-image
 filebeat-image:
-	@bash -c 'make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=filebeat AWSBEATS_VERSION=$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
+	bash -c 'make dockerimage BEATS_VERSION=$(BEATS_VERSION) GO_VERSION=1.10.2 BEAT_NAME=filebeat AWSBEATS_VERSION=$(AWSBEATS_VERSION) GOPATH=$HOME/go'
 
 .PHONY: heartbeat-image
 heartbeat-image:
-	@bash -c 'make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=heartbeat AWSBEATS_VERSION=$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
+	bash -c 'make dockerimage BEATS_VERSION=$(BEATS_VERSION) GO_VERSION=1.10.2 BEAT_NAME=heartbeat AWSBEATS_VERSION=\$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
 
 .PHONY: metricbeat-image
 metricbeat-image:
-	@bash -c 'make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=metricbeat AWSBEATS_VERSION=$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
+	bash -c 'make dockerimage BEATS_VERSION=$(BEATS_VERSION) GO_VERSION=1.10.2 BEAT_NAME=metricbeat AWSBEATS_VERSION=\$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
 
 .PHONY: apm-server-image
 apm-server-image:
-	@bash -c 'make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=apm-server BEAT_GITHUB_REPO=github.com/elastic/apm-server BEAT_GO_PKG=github.com/elastic/apm-server BEAT_DOCKER_IMAGE=docker.elastic.co/apm/apm-server:6.2.4 AWSBEATS_VERSION=$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
+	bash -c 'make dockerimage BEATS_VERSION=$(BEATS_VERSION) GO_VERSION=1.10.2 BEAT_NAME=apm-server BEAT_GITHUB_REPO=github.com/elastic/apm-server BEAT_GO_PKG=github.com/elastic/apm-server BEAT_DOCKER_IMAGE=docker.elastic.co/apm/apm-server:$(BEATS_VERSION) AWSBEATS_VERSION=\$(ref=$(git rev-parse HEAD); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
