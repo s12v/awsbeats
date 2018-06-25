@@ -17,7 +17,7 @@ func TestMapEvent(t *testing.T) {
 	client := client{encoder: MockCodec{}}
 	record, _ := client.mapEvent(&publisher.Event{})
 
-	if string(record.Data) != "boom" {
+	if string(record.Data) != "boom\n" {
 		t.Errorf("Unexpected data: %s", record.Data)
 	}
 }
@@ -25,13 +25,17 @@ func TestMapEvent(t *testing.T) {
 func TestMapEvents(t *testing.T) {
 	client := client{encoder: MockCodec{}}
 	events := []publisher.Event{{}}
-	records, _ := client.mapEvents(events)
+	okEvents, records, _ := client.mapEvents(events)
 
 	if len(records) != 1 {
 		t.Errorf("Expected 1 records, got %v", len(records))
 	}
 
-	if string(records[0].Data) != "boom" {
+	if len(okEvents) != 1 {
+		t.Errorf("Expected 1 ok events, got %v", len(okEvents))
+	}
+
+	if string(records[0].Data) != "boom\n" {
 		t.Errorf("Unexpected data %s", records[0].Data)
 	}
 }
