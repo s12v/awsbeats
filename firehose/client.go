@@ -1,6 +1,7 @@
 package firehose
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/firehose"
 	"github.com/elastic/beats/libbeat/beat"
@@ -136,16 +137,11 @@ func (client *client) sendRecords(records []*firehose.Record) (*firehose.PutReco
 }
 
 func collectFailedEvents(res *firehose.PutRecordBatchOutput, events []publisher.Event) []publisher.Event {
-	if res.FailedPutCount != nil && *res.FailedPutCount > 0 {
+	if aws.Int64Value(res.FailedPutCount) > 0 {
 		failedEvents := make([]publisher.Event, 0)
 		responses := res.RequestResponses
 		for i, r := range responses {
-			if r == nil {
-				// See https://github.com/s12v/awsbeats/issues/27 for more info
-				logp.Warn("no record returned from firehose for event: ", events[i])
-				continue
-			}
-			if *r.ErrorCode != "" {
+			if aws.StringValue(r.ErrorCode) != "" {
 				failedEvents = append(failedEvents, events[i])
 			}
 		}
