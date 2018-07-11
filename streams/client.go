@@ -167,6 +167,10 @@ func collectFailedEvents(res *kinesis.PutRecordsOutput, events []publisher.Event
 				logp.Warn("no record returned from kinesis for event: ", events[i])
 				continue
 			}
+			if r.ErrorCode == nil {
+				logp.Warn("skipping failed event with unexpected state: corresponding kinesis record misses error code: ", r)
+				continue
+			}
 			if *r.ErrorCode != "" {
 				failedEvents = append(failedEvents, events[i])
 			}
