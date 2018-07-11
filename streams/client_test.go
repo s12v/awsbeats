@@ -181,6 +181,28 @@ func TestPublishEvents(t *testing.T) {
 	}
 
 	{
+		// Records with nil error codes should be ignored with some log
+		client.encoder = StubCodec{dat: []byte("boom"), err: nil}
+		client.streams = StubClient{
+			out: &kinesis.PutRecordsOutput{
+				Records: []*kinesis.PutRecordsResultEntry{
+					&kinesis.PutRecordsResultEntry{
+						ErrorCode: nil,
+					},
+				},
+				FailedRecordCount: aws.Int64(1),
+			},
+		}
+		rest, err := client.publishEvents(events)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if len(rest) != 0 {
+			t.Errorf("unexpected number of remaining events: %d", len(rest))
+		}
+	}
+
+	{
 		// Kinesis received the event but it was not persisted, probably due to underlying infrastructure failure
 		client.encoder = StubCodec{dat: []byte("boom"), err: nil}
 		client.streams = StubClient{
