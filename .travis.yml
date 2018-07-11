@@ -4,7 +4,6 @@ go:
   - "1.10"
 
 install:
-  - go get github.com/elastic/beats || true
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
   - dep ensure
 

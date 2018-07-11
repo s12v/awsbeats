@@ -14,7 +14,7 @@ BEAT_DOCKER_IMAGE ?= docker.elastic.co/beats/$(BEAT_NAME):$(BEATS_VERSION)
 GOPATH ?= $(HOME)/go
 
 .PHONY: all
-all: vars test beats build
+all: vars beats test build
 
 .PHONY: vars
 vars:
