@@ -280,6 +280,14 @@ If you got affected by this, try running:
 $ make BEATS_VERSION=v6.1.3 GOPATH=$HOME/go
 ```
 
+### Publishing your own awsbeats images
+
+The following example builds `kubeaws/awsbeats:0.2.4-metricbeat-v6.3.1` from your worktree:
+
+```
+make metricbeat-image DOCKER_IMAGE=kubeaws/awsbeats AWSBEATS_VERSION=0.2.4 BEATS_VERSION=6.3.1
+```
+
 ## Output buffering
 
 TODO
