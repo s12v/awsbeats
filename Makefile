@@ -31,10 +31,8 @@ format:
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -d {} + | tee /dev/stderr)" || \
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -w {} + | tee /dev/stderr)"
 
-build: format
+build: format beats
 	@echo "Building the plugin with: BEATS_VERSION=$(BEATS_VERSION) GO_VERSION=$(GO_VERSION) GO_PLATFORM=$(GO_PLATFORM)"
-	@cd "$$GOPATH/src/github.com/elastic/beats" && \
-	git checkout $(BEATS_TAG) && \
 	cd "$(CURDIR)"
 	go build -buildmode=plugin ./plugins/kinesis
 	@mkdir -p "$(CURDIR)/target"
