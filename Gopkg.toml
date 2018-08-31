@@ -24,7 +24,7 @@
 #   go-tests = true
 #   unused-packages = true
 
-ignored = ["github.com/elastic/beats"]
+ignored = ["github.com/elastic/beats*"]
 
 [[constraint]]
   name = "github.com/aws/aws-sdk-go"

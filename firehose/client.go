@@ -27,7 +27,7 @@ func newClient(sess *session.Session, config *FirehoseConfig, observer outputs.O
 		firehose:           firehose.New(sess),
 		deliveryStreamName: config.DeliveryStreamName,
 		beatName:           beat.Beat,
-		encoder:            json.New(false, beat.Version),
+		encoder:            json.New(false, true, beat.Version),
 		timeout:            config.Timeout,
 		observer:           observer,
 	}
