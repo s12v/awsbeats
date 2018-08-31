@@ -35,7 +35,7 @@ func newClient(sess *session.Session, config *StreamsConfig, observer outputs.Ob
 		streamName:           config.DeliveryStreamName,
 		partitionKeyProvider: partitionKeyProvider,
 		beatName:             beat.Beat,
-		encoder:              json.New(false, beat.Version),
+		encoder:              json.New(false, true, beat.Version),
 		timeout:              config.Timeout,
 		observer:             observer,
 	}

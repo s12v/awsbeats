@@ -2,7 +2,7 @@ MAKE_VARIABLES := $(.VARIABLES)
 
 GO_VERSION=$(shell go version | cut -d ' ' -f 3 | sed -e 's/ /-/g' | sed -e 's/\//-/g' | sed -e 's/^go//g')
 GO_PLATFORM ?= $(shell go version | cut -d ' ' -f 4 | sed -e 's/ /-/g' | sed -e 's/\//-/g')
-BEATS_VERSION ?= "6.3.0"
+BEATS_VERSION ?= "6.4.0"
 BEATS_TAG ?= $(shell echo ${BEATS_VERSION} | sed 's/[^[:digit:]]*\([[:digit:]]*\(\.[[:digit:]]*\)\)/v\1/')
 AWSBEATS_VERSION ?= $(shell script/version)
 BEAT_NAME ?= "filebeat"
