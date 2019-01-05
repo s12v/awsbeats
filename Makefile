@@ -2,10 +2,10 @@ MAKE_VARIABLES := $(.VARIABLES)
 
 GO_VERSION=$(shell go version | cut -d ' ' -f 3 | sed -e 's/ /-/g' | sed -e 's/\//-/g' | sed -e 's/^go//g')
 GO_PLATFORM ?= $(shell go version | cut -d ' ' -f 4 | sed -e 's/ /-/g' | sed -e 's/\//-/g')
-BEATS_VERSION ?= "6.4.0"
+BEATS_VERSION ?= "6.5.4"
 BEATS_TAG ?= $(shell echo ${BEATS_VERSION} | sed 's/[^[:digit:]]*\([[:digit:]]*\(\.[[:digit:]]*\)\)/v\1/')
 AWSBEATS_VERSION ?= $(shell script/version)
-BEAT_NAME ?= "filebeat"
+BEAT_NAME ?= filebeat
 DOCKER_IMAGE ?= s12v/awsbeats
 DOCKER_TAG ?= $(AWSBEATS_VERSION)-$(BEAT_NAME)-$(BEATS_VERSION)
 BEAT_GITHUB_REPO ?= github.com/elastic/beats

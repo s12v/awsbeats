@@ -51,6 +51,10 @@ func createPartitionKeyProvider(config *StreamsConfig) PartitionKeyProvider {
 	}
 }
 
+func (client client) String() string {
+	return "streams"
+}
+
 func (client *client) Close() error {
 	return nil
 }
@@ -164,11 +168,11 @@ func collectFailedEvents(res *kinesis.PutRecordsOutput, events []publisher.Event
 		for i, r := range records {
 			if r == nil {
 				// See https://github.com/s12v/awsbeats/issues/27 for more info
-				logp.Warn("no record returned from kinesis for event: ", events[i])
+				logp.NewLogger("streams").Warn("no record returned from kinesis for event: ", events[i])
 				continue
 			}
 			if r.ErrorCode == nil {
-				logp.Warn("skipping failed event with unexpected state: corresponding kinesis record misses error code: ", r)
+				logp.NewLogger("streams").Warn("skipping failed event with unexpected state: corresponding kinesis record misses error code: ", r)
 				continue
 			}
 			if *r.ErrorCode != "" {
