@@ -56,7 +56,8 @@ function doRelease(version, beatsVersion) {
         repo: 'awsbeats',
         tag_name: tag,
         name: tag,
-        body: `Beats version: v${beatsVersion}`
+        body: `Beats version: v${beatsVersion}`,
+        prerelease: true
     })
 }
 
