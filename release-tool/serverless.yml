@@ -14,4 +14,3 @@ functions:
     handler: handler.run
     events:
       - schedule: rate(5 minutes)
-
