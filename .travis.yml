@@ -18,6 +18,7 @@ script:
   - |
     FB=$(ls target/filebeat* | tail -1)
     FH=$(ls target/kinesis* | tail -1)
+    chmod go-w example/firehose/filebeat.yml
     echo "$FB -plugin $FH -c example/firehose/filebeat.yml --once"
     $FB -plugin $FH -c example/firehose/filebeat.yml --once
 
