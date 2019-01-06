@@ -46,7 +46,7 @@ See the example [filebeat.yaml](https://github.com/s12v/awsbeats/blob/master/exa
 
 ## Build it yourself
 
-Build requires Go 1.10+ and Linux. You need to define Filebeat version (`v6.5.4` in this example)
+Build requires Go 1.10+. You need to define Filebeat version (`v6.5.4` in this example)
 
 ```
 go get github.com/elastic/beats
