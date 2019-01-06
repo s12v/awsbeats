@@ -224,3 +224,13 @@ func TestPublishEvents(t *testing.T) {
 		}
 	}
 }
+
+func TestClient_String(t *testing.T) {
+	fieldForPartitionKey := "mypartitionkey"
+	provider := newFieldPartitionKeyProvider(fieldForPartitionKey)
+	client := client{encoder: StubCodec{dat: []byte("boom")}, partitionKeyProvider: provider}
+
+	if v := client.String(); v != "streams" {
+		t.Errorf("unexpected value '%v'", v)
+	}
+}
