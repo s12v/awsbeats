@@ -70,3 +70,11 @@ func TestCollectFailedEvents(t *testing.T) {
 		}
 	}
 }
+
+func TestClient_String(t *testing.T) {
+	client := client{encoder: MockCodec{}}
+
+	if v := client.String(); v != "firehose" {
+		t.Errorf("unexpected value '%v'", v)
+	}
+}

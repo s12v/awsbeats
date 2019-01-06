@@ -1,6 +1,6 @@
 # See https://stackoverflow.com/a/48324849 for how ARG before FROM works
 # Used from within the first FROM
-ARG GO_VERSION=${GO_VERSION:-1.10.2}
+ARG GO_VERSION=${GO_VERSION:-1.11.4}
 # Used from within the second FROM
 ARG BEAT_DOCKER_IMAGE
 
@@ -15,7 +15,7 @@ COPY . /go/src/github.com/s12v/awsbeats
 
 WORKDIR /go/src/github.com/s12v/awsbeats
 
-ARG BEATS_VERSION=${BEATS_VERSION:-6.1.2}
+ARG BEATS_VERSION=${BEATS_VERSION:-6.5.4}
 ARG GO_PLATFORM=${GO_PLATFORM:-linux-amd64}
 ARG AWSBEATS_VERSION=${AWSBEATS_VERSION:-1-snapshot}
 ARG BEAT_NAME=${BEAT_NAME:-filebeat}

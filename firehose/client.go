@@ -35,6 +35,10 @@ func newClient(sess *session.Session, config *FirehoseConfig, observer outputs.O
 	return client, nil
 }
 
+func (client *client) String() string {
+	return "firehose"
+}
+
 func (client *client) Close() error {
 	return nil
 }
@@ -64,21 +68,21 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 	observer := client.observer
 	observer.NewBatch(len(events))
 
-	logp.Debug("firehose", "received events: %v", events)
+	logp.NewLogger("firehose").Debug("received events: %v", events)
 	okEvents, records, dropped := client.mapEvents(events)
 
-	logp.Debug("firehose", "sent %d records: %v", len(records), records)
+	logp.NewLogger("firehose").Debug("sent %d records: %v", len(records), records)
 	observer.Dropped(dropped)
 	observer.Acked(len(okEvents))
 
-	logp.Debug("firehose", "mapped to records: %v", records)
+	logp.NewLogger("firehose").Debug("mapped to records: %v", records)
 	res, err := client.sendRecords(records)
 	failed := collectFailedEvents(res, events)
 	if err != nil && len(failed) == 0 {
 		failed = events
 	}
 	if len(failed) > 0 {
-		logp.Info("retrying %d events on error: %v", len(failed), err)
+		logp.NewLogger("firehose").Info("retrying %d events on error: %v", len(failed), err)
 	}
 	return failed, err
 }
@@ -90,7 +94,7 @@ func (client *client) mapEvents(events []publisher.Event) ([]publisher.Event, []
 	for _, event := range events {
 		record, err := client.mapEvent(&event)
 		if err != nil {
-			logp.Debug("firehose", "failed to map event(%v): %v", event, err)
+			logp.NewLogger("firehose").Warn("failed to map event(%v): %v", event, err)
 			dropped++
 		} else {
 			okEvents = append(okEvents, event)
@@ -110,7 +114,7 @@ func (client *client) mapEvent(event *publisher.Event) (*firehose.Record, error)
 				return nil, err
 			}
 
-			logp.Critical("Unable to encode event: %v", err)
+			logp.NewLogger("firehose").Error("Unable to encode event: %v", err)
 			return nil, err
 		}
 		// See https://github.com/elastic/beats/blob/5a6630a8bc9b9caf312978f57d1d9193bdab1ac7/libbeat/outputs/kafka/client.go#L163-L164
