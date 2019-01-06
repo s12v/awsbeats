@@ -23,7 +23,7 @@ output.firehose:
   region: eu-central-1
   stream_name: test1 # Your delivery stream name
 ```
-- Run filebeat with plugin `./filebeat-v6.1.3-go1.10rc1-linux-amd64 -plugin kinesis.so-0.0.3-v6.1.3-go1.10rc1-linux-amd64`
+- Run filebeat with plugin `./filebeat-v6.5.4-go1.11-linux-amd64 -plugin kinesis.so-0.2.14-v6.5.4-go1.11-linux-amd64`
 
 ### Streams
 
@@ -37,7 +37,7 @@ output.streams:
 ```
 See the example [filebeat.yaml](https://github.com/s12v/awsbeats/blob/master/example/streams/filebeat.yml) for more details.
 
-- Run filebeat with plugin `./filebeat-v6.1.3-go1.10rc1-linux-amd64 -plugin kinesis.so-0.0.3-v6.1.3-go1.10rc1-linux-amd64`
+- Run filebeat with plugin `./filebeat-v6.5.4-go1.11-linux-amd64 -plugin kinesis.so-0.2.14-v6.5.4-go1.11-linux-amd64`
 
 ## AWS authentication
 
@@ -46,19 +46,19 @@ See the example [filebeat.yaml](https://github.com/s12v/awsbeats/blob/master/exa
 
 ## Build it yourself
 
-Build requires Go 1.10+ and Linux. You need to define Filebeat version (`v6.1.3` in this example)
+Build requires Go 1.10+ and Linux. You need to define Filebeat version (`v6.5.4` in this example)
 
 ```
 go get github.com/elastic/beats
 # curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 dep ensure
-make BEATS_VERSION=v6.1.3
+make BEATS_VERSION=v6.5.4
 ```
 
 In `target/` you will find filebeat and plugin, for example:
 ```
-filebeat-v6.1.3-go1.10rc1-linux-amd64
-kinesis.so-1-snapshot-v6.1.3-go1.10rc1-linux-amd64
+filebeat-v6.5.4-go1.11-linux-amd64
+kinesis.so-1-snapshot-v6.5.4-go1.11-linux-amd64
 ```
 
 ## Running in a docker container
@@ -68,7 +68,7 @@ To build a docker image for awsbeats, run `make dockerimage`.
 ### filebeat
 
 ```
-make dockerimage BEATS_VERSION=6.2.4 GO_VERSION=1.10.2 BEAT_NAME=filebeat GOPATH=$HOME/go
+make dockerimage BEATS_VERSION=6.5.4 GO_VERSION=1.11.4 BEAT_NAME=filebeat GOPATH=$HOME/go
 ```
 
 There is also a convenient make target `filebeat-image` with sane defaults:
@@ -277,7 +277,7 @@ If you see `No such file or directory` error of filebeat while building the plug
 If you got affected by this, try running:
 
 ```
-$ make BEATS_VERSION=v6.1.3 GOPATH=$HOME/go
+$ make BEATS_VERSION=v6.5.4 GOPATH=$HOME/go
 ```
 
 ### Publishing your own awsbeats images
