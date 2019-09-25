@@ -78,6 +78,14 @@ endif
 dockerimage:
 	docker build --build-arg AWSBEATS_VERSION=$(AWSBEATS_VERSION) --build-arg GO_VERSION=$(GO_VERSION) --build-arg GO_PLATFORM=linux-amd64 --build-arg BEAT_GITHUB_REPO=$(BEAT_GITHUB_REPO) --build-arg BEAT_GO_PKG=$(BEAT_GO_PKG) --build-arg BEAT_DOCKER_IMAGE=$(BEAT_DOCKER_IMAGE) --build-arg BEATS_VERSION=$(BEATS_VERSION) --build-arg BEAT_NAME=$(BEAT_NAME) -t $(DOCKER_IMAGE):$(DOCKER_TAG) .
 
+.PHONY: ecr-login
+ecr-login:
+	`aws ecr get-login --no-include-email`
+
+.PHONY: push-image
+push-image: ecr-login
+	docker push $(DOCKER_IMAGE):$(DOCKER_TAG)
+
 .PHONY: auditbeat-image
 auditbeat-image:
 	bash -c 'make dockerimage BEATS_VERSION=$(BEATS_VERSION) GO_VERSION=$(GO_VERSION) BEAT_NAME=auditbeat AWSBEATS_VERSION=$(AWSBEATS_VERSION); ref=${ref:0:7}; echo $ref) GOPATH=$HOME/go'
