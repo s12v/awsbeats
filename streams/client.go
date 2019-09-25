@@ -90,6 +90,10 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 		logp.Debug("kinesis", "sent %d records: %v", len(records), records)
 		observer.Dropped(dropped)
 		observer.Acked(len(okEvents))
+		if len(records) == 0 {
+			logp.Info("kinesis", "No records were mapped")
+			return nil, nil
+		}
 	}
 	logp.Debug("kinesis", "mapped to records: %v", records)
 	res, err := client.putKinesisRecords(records)
