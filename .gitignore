@@ -20,3 +20,5 @@ target
 example/firehose/log/*
 
 *~
+
+*.sw[a-p]

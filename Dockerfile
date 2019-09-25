@@ -19,7 +19,7 @@ ARG BEATS_VERSION=${BEATS_VERSION:-6.5.4}
 ARG GO_PLATFORM=${GO_PLATFORM:-linux-amd64}
 ARG AWSBEATS_VERSION=${AWSBEATS_VERSION:-1-snapshot}
 ARG BEAT_NAME=${BEAT_NAME:-filebeat}
-RUN curl --verbose --fail https://raw.githubusercontent.com/golang/dep/master/install.sh -o install.sh && sh install.sh && rm install.sh
+RUN curl -s --fail https://raw.githubusercontent.com/golang/dep/master/install.sh -o install.sh && sh install.sh && rm install.sh
 RUN go get github.com/elastic/beats || true
 RUN /go/bin/dep ensure
 # You need to enable CGO on both the plugin and the beat.
@@ -62,4 +62,4 @@ COPY --from=beats /build/target/${BEAT_NAME}-${BEATS_VERSION}-go${GO_VERSION}-li
 # Usage:
 #   docker run --rm s12v/awsbeats:canary cat filebeat.yml > filebeat.yml
 #   cat outputs.yml >> filebeat.yml
-#   docker run --rm -v $(pwd)/filebeat.yml:/etc/filebeat/filebeat.yml s12v/awsbeats:canary filebeat --plugin kinesis.so -e -v 
+#   docker run --rm -v $(pwd)/filebeat.yml:/etc/filebeat/filebeat.yml s12v/awsbeats:canary filebeat --plugin kinesis.so -e -v

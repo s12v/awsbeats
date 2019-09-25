@@ -1,2 +1,11 @@
 # Vim
 *.sw[a-p]
+.git
+.circleci
+example
+release-tool
+.dockerignore
+.travis.yml
+*.Dockerfile
+Dockerfile
+.gitignore
