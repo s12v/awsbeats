@@ -9,3 +9,5 @@ release-tool
 *.Dockerfile
 Dockerfile
 .gitignore
+vendor
+target
