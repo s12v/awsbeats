@@ -2,23 +2,19 @@ package streams
 
 import (
 	"errors"
+	"github.com/jpillora/backoff"
 	"time"
 )
 
 type StreamsConfig struct {
-	Region               string        `config:"region"`
-	DeliveryStreamName   string        `config:"stream_name"`
-	PartitionKey         string        `config:"partition_key"`
-	PartitionKeyProvider string        `config:"partition_key_provider"`
-	BatchSize            int           `config:"batch_size"`
-	MaxRetries           int           `config:"max_retries"`
-	Timeout              time.Duration `config:"timeout"`
-	Backoff              backoff       `config:"backoff"`
-}
-
-type backoff struct {
-	Init time.Duration
-	Max  time.Duration
+	Region               string          `config:"region"`
+	DeliveryStreamName   string          `config:"stream_name"`
+	PartitionKey         string          `config:"partition_key"`
+	PartitionKeyProvider string          `config:"partition_key_provider"`
+	BatchSize            int             `config:"batch_size"`
+	MaxRetries           int             `config:"max_retries"`
+	Timeout              time.Duration   `config:"timeout"`
+	Backoff              backoff.Backoff `config:"backoff"`
 }
 
 const (
@@ -31,9 +27,10 @@ var (
 	defaultConfig = StreamsConfig{
 		Timeout:    90 * time.Second,
 		MaxRetries: 3,
-		Backoff: backoff{
-			Init: 1 * time.Second,
-			Max:  60 * time.Second,
+		Backoff: backoff.Backoff{
+			Min:    1 * time.Second,
+			Max:    60 * time.Second,
+			Jitter: true,
 		},
 	}
 )

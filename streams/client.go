@@ -11,6 +11,7 @@ import (
 	"github.com/elastic/beats/libbeat/outputs/codec"
 	"github.com/elastic/beats/libbeat/outputs/codec/json"
 	"github.com/elastic/beats/libbeat/publisher"
+	"github.com/jpillora/backoff"
 	"time"
 )
 
@@ -22,6 +23,7 @@ type client struct {
 	encoder              codec.Codec
 	timeout              time.Duration
 	observer             outputs.Observer
+	backoff              backoff.Backoff
 }
 
 type kinesisStreamsClient interface {
@@ -38,6 +40,7 @@ func newClient(sess *session.Session, config *StreamsConfig, observer outputs.Ob
 		encoder:              json.New(false, true, beat.Version),
 		timeout:              config.Timeout,
 		observer:             observer,
+		backoff:              config.Backoff,
 	}
 
 	return client, nil
@@ -98,11 +101,25 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 	logp.Debug("kinesis", "mapped to records: %v", records)
 	res, err := client.putKinesisRecords(records)
 	failed := collectFailedEvents(res, events)
-	if err != nil && len(failed) == 0 {
-		failed = events
+	if len(failed) == 0 {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case kinesis.ErrCodeLimitExceededException:
+			case kinesis.ErrCodeProvisionedThroughputExceededException:
+			case kinesis.ErrCodeInternalFailureException:
+				logp.Info("putKinesisRecords failed (api level, not per-record failure). Will retry all records.", err)
+				failed = events
+			default:
+				logp.Warn("putKinesisRecords persistent failure. Will not retry", err)
+			}
+		}
 	}
-	if len(failed) > 0 {
-		logp.Info("retrying %d events on error: %v", len(failed), err)
+	if err != nil || len(failed) > 0 {
+		dur := client.backoff.Duration()
+		logp.Info("retrying %d events on error: %v", len(failed), err, dur)
+		time.Sleep(dur)
+	} else {
+		client.backoff.Reset()
 	}
 	return failed, err
 }
@@ -176,10 +193,11 @@ func collectFailedEvents(res *kinesis.PutRecordsOutput, events []publisher.Event
 				continue
 			}
 			if r.ErrorCode == nil {
-				logp.NewLogger("streams").Warn("skipping failed event with unexpected state: corresponding kinesis record misses error code: ", r)
+				// logp.NewLogger("streams").Warn("skipping failed event with unexpected state: corresponding kinesis record misses error code: ", r)
 				continue
 			}
-			if *r.ErrorCode != "" {
+			if *r.ErrorCode == "ProvisionedThroughputExceededException" {
+				logp.NewLogger("streams").Debug("throughput exceeded. will retry", r)
 				failedEvents = append(failedEvents, events[i])
 			}
 		}
