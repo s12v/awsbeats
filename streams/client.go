@@ -50,9 +50,8 @@ func newClient(sess *session.Session, config *StreamsConfig, observer outputs.Ob
 func createPartitionKeyProvider(config *StreamsConfig) PartitionKeyProvider {
 	if config.PartitionKeyProvider == "xid" {
 		return newXidPartitionKeyProvider()
-	} else {
-		return newFieldPartitionKeyProvider(config.PartitionKey)
 	}
+	return newFieldPartitionKeyProvider(config.PartitionKey)
 }
 
 func (client client) String() string {
