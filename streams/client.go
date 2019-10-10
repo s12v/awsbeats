@@ -94,7 +94,7 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 		observer.Dropped(dropped)
 		observer.Acked(len(okEvents))
 		if len(records) == 0 {
-			logp.Info("kinesis", "No records were mapped")
+			logp.Debug("kinesis", "No records were mapped")
 			return nil, nil
 		}
 	}
