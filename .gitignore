@@ -22,3 +22,5 @@ example/firehose/log/*
 *~
 
 *.sw[a-p]
+
+.ropeproject
