@@ -49,7 +49,7 @@ func (c *StreamsConfig) Validate() error {
 	}
 
 	if c.PartitionKeyProvider != "" && c.PartitionKeyProvider != "xid" {
-		return errors.New("invalid partition key procider: the only supported provider is `xid`")
+		return errors.New("invalid partition key provider: the only supported provider is `xid`")
 	}
 
 	return nil
