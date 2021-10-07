@@ -3,6 +3,7 @@ package streams
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/elastic/beats/libbeat/beat"
@@ -11,6 +12,7 @@ import (
 	"github.com/elastic/beats/libbeat/outputs/codec"
 	"github.com/elastic/beats/libbeat/outputs/codec/json"
 	"github.com/elastic/beats/libbeat/publisher"
+	"github.com/jpillora/backoff"
 	"time"
 )
 
@@ -22,6 +24,7 @@ type client struct {
 	encoder              codec.Codec
 	timeout              time.Duration
 	observer             outputs.Observer
+	backoff              backoff.Backoff
 }
 
 type kinesisStreamsClient interface {
@@ -36,11 +39,12 @@ func newClient(sess *session.Session, config *StreamsConfig, observer outputs.Ob
 		partitionKeyProvider: partitionKeyProvider,
 		beatName:             beat.Beat,
 		encoder: json.New(beat.Version, json.Config{
-			Pretty:     false,
-			EscapeHTML: false,
-		}),
-		timeout:  config.Timeout,
-		observer: observer,
+        			Pretty:     false,
+        			EscapeHTML: true,
+        }),
+		timeout:              config.Timeout,
+		observer:             observer,
+		backoff:              config.Backoff,
 	}
 
 	return client, nil
@@ -49,9 +53,8 @@ func newClient(sess *session.Session, config *StreamsConfig, observer outputs.Ob
 func createPartitionKeyProvider(config *StreamsConfig) PartitionKeyProvider {
 	if config.PartitionKeyProvider == "xid" {
 		return newXidPartitionKeyProvider()
-	} else {
-		return newFieldPartitionKeyProvider(config.PartitionKey)
 	}
+	return newFieldPartitionKeyProvider(config.PartitionKey)
 }
 
 func (client client) String() string {
@@ -93,15 +96,33 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 		logp.Debug("kinesis", "sent %d records: %v", len(records), records)
 		observer.Dropped(dropped)
 		observer.Acked(len(okEvents))
+		if len(records) == 0 {
+			logp.Debug("kinesis", "No records were mapped")
+			return nil, nil
+		}
 	}
 	logp.Debug("kinesis", "mapped to records: %v", records)
 	res, err := client.putKinesisRecords(records)
 	failed := collectFailedEvents(res, events)
-	if err != nil && len(failed) == 0 {
-		failed = events
+	if len(failed) == 0 {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case kinesis.ErrCodeLimitExceededException:
+			case kinesis.ErrCodeProvisionedThroughputExceededException:
+			case kinesis.ErrCodeInternalFailureException:
+				logp.Info("putKinesisRecords failed (api level, not per-record failure). Will retry all records.", err)
+				failed = events
+			default:
+				logp.Warn("putKinesisRecords persistent failure. Will not retry", err)
+			}
+		}
 	}
-	if len(failed) > 0 {
-		logp.Info("retrying %d events on error: %v", len(failed), err)
+	if err != nil || len(failed) > 0 {
+		dur := client.backoff.Duration()
+		logp.Info("retrying %d events on error: %v", len(failed), err, dur)
+		time.Sleep(dur)
+	} else {
+		client.backoff.Reset()
 	}
 	return failed, err
 }
@@ -175,10 +196,11 @@ func collectFailedEvents(res *kinesis.PutRecordsOutput, events []publisher.Event
 				continue
 			}
 			if r.ErrorCode == nil {
-				logp.NewLogger("streams").Warn("skipping failed event with unexpected state: corresponding kinesis record misses error code: ", r)
+				// logp.NewLogger("streams").Warn("skipping failed event with unexpected state: corresponding kinesis record misses error code: ", r)
 				continue
 			}
-			if *r.ErrorCode != "" {
+			if *r.ErrorCode == "ProvisionedThroughputExceededException" {
+				logp.NewLogger("streams").Debug("throughput exceeded. will retry", r)
 				failedEvents = append(failedEvents, events[i])
 			}
 		}

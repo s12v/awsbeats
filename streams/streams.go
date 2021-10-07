@@ -35,6 +35,6 @@ func New(
 		return outputs.Fail(err)
 	}
 
-	client = outputs.WithBackoff(client, config.Backoff.Init, config.Backoff.Max)
+	client = outputs.WithBackoff(client, config.Backoff.Min, config.Backoff.Max)
 	return outputs.Success(config.BatchSize, config.MaxRetries, client)
 }
