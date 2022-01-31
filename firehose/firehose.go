@@ -14,7 +14,6 @@ var (
 )
 
 func New(
-	_ outputs.IndexManager,
 	beat beat.Info,
 	stats outputs.Observer,
 	cfg *common.Config,
