@@ -63,3 +63,4 @@ COPY --from=beats /build/target/${BEAT_NAME}-${BEATS_VERSION}-go${GO_VERSION}-li
 #   docker run --rm s12v/awsbeats:canary cat filebeat.yml > filebeat.yml
 #   cat outputs.yml >> filebeat.yml
 #   docker run --rm -v $(pwd)/filebeat.yml:/etc/filebeat/filebeat.yml s12v/awsbeats:canary filebeat --plugin kinesis.so -e -v
+# asdf
