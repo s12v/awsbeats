@@ -2,6 +2,8 @@ package streams
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -13,7 +15,6 @@ import (
 	"github.com/elastic/beats/libbeat/outputs/codec/json"
 	"github.com/elastic/beats/libbeat/publisher"
 	"github.com/jpillora/backoff"
-	"time"
 )
 
 type client struct {
@@ -38,7 +39,7 @@ func newClient(sess *session.Session, config *StreamsConfig, observer outputs.Ob
 		streamName:           config.DeliveryStreamName,
 		partitionKeyProvider: partitionKeyProvider,
 		beatName:             beat.Beat,
-		encoder:              json.New(false, true, beat.Version),
+		encoder:              json.New(beat.Version, json.Config{Pretty: false, EscapeHTML: true}),
 		timeout:              config.Timeout,
 		observer:             observer,
 		backoff:              config.Backoff,
@@ -107,16 +108,16 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 			case kinesis.ErrCodeLimitExceededException:
 			case kinesis.ErrCodeProvisionedThroughputExceededException:
 			case kinesis.ErrCodeInternalFailureException:
-				logp.Info("putKinesisRecords failed (api level, not per-record failure). Will retry all records.", err)
+				logp.Info("putKinesisRecords failed (api level, not per-record failure). Will retry all records. error: %v", err)
 				failed = events
 			default:
-				logp.Warn("putKinesisRecords persistent failure. Will not retry", err)
+				logp.Warn("putKinesisRecords persistent failure. Will not retry. error: %v", err)
 			}
 		}
 	}
 	if err != nil || len(failed) > 0 {
 		dur := client.backoff.Duration()
-		logp.Info("retrying %d events on error: %v", len(failed), err, dur)
+		logp.Info("retrying %d events client.backoff.Duration %s on error: %v", len(failed), dur, err)
 		time.Sleep(dur)
 	} else {
 		client.backoff.Reset()

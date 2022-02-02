@@ -10,11 +10,11 @@ done
 
 docker run \
   --rm \
-  -v $(pwd)/logs:/mnt/log/ \
+  -v $(pwd)/logs:/data/ \
   -v $(pwd)/filebeat.yml:/etc/filebeat/filebeat.yml \
   -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
   -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
-  s12v/awsbeats:filebeat-canary \
+  lumigo/awsbeats:8f5fa72-dirty \
   filebeat \
   --plugin kinesis.so \
   -e \

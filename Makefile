@@ -1,7 +1,8 @@
 MAKE_VARIABLES := $(.VARIABLES)
 
 GO_VERSION=$(shell go version | cut -d ' ' -f 3 | sed -e 's/ /-/g' | sed -e 's/\//-/g' | sed -e 's/^go//g')
-GO_VERSION=1.11.4
+# TODO: Fix !!!!
+GO_VERSION=1.17.6# TODO: Fix !!!!
 GO_PLATFORM ?= $(shell go version | cut -d ' ' -f 4 | sed -e 's/ /-/g' | sed -e 's/\//-/g')
 BEATS_VERSION ?= "6.5.4"
 BEATS_TAG ?= $(shell echo ${BEATS_VERSION} | sed 's/[^[:digit:]]*\([[:digit:]]*\(\.[[:digit:]]*\)\)/v\1/')

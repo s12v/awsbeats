@@ -1,6 +1,8 @@
 package firehose
 
 import (
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/firehose"
@@ -10,7 +12,6 @@ import (
 	"github.com/elastic/beats/libbeat/outputs/codec"
 	"github.com/elastic/beats/libbeat/outputs/codec/json"
 	"github.com/elastic/beats/libbeat/publisher"
-	"time"
 )
 
 type client struct {
@@ -27,7 +28,7 @@ func newClient(sess *session.Session, config *FirehoseConfig, observer outputs.O
 		firehose:           firehose.New(sess),
 		deliveryStreamName: config.DeliveryStreamName,
 		beatName:           beat.Beat,
-		encoder:            json.New(false, true, beat.Version),
+		encoder:            json.New(beat.Version, json.Config{Pretty: false, EscapeHTML: true}),
 		timeout:            config.Timeout,
 		observer:           observer,
 	}

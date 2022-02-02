@@ -1,0 +1,35 @@
+# --- # ?
+http.enabled: true
+
+logging.level: info
+logging.to_files: false
+logging.to_stderr: true
+logging.metrics.period: 60s
+
+filebeat.inputs:
+  - type: log
+    paths:
+    - /data/*
+    max_backoff: 1s
+    max_bytes: 900000
+
+output:
+  streams:
+    region: us-west-2
+    stream_name: leon-fbeat
+    partition_key_provider: xid
+    batch_size: 500
+    max_retries: 20
+    # add max request size (max for real 5MB )
+    backoff:
+      min: 1
+      max: 30
+
+# output.console:
+#   pretty: true
+#   bulk_max_size: 1
+
+queue.mem:
+  events: 4096
+  flush.min_events: 1
+  flush.timeout: 1s

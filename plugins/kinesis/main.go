@@ -1,10 +1,11 @@
 package main
 
 import (
+	"github.com/lumigo-io/awsbeats/firehose"
+	"github.com/lumigo-io/awsbeats/streams"
+
 	"github.com/elastic/beats/libbeat/outputs"
 	"github.com/elastic/beats/libbeat/plugin"
-	"github.com/s12v/awsbeats/firehose"
-	"github.com/s12v/awsbeats/streams"
 )
 
 var Bundle = plugin.Bundle(

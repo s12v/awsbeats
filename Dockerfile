@@ -11,14 +11,15 @@ LABEL maintainr "Yusuke KUOKA <ykuoka@gmail.com>"
 # "MAINTAINER" is deprecated in favor of the above label. But required to make codacy happy
 MAINTAINER Yusuke KUOKA <ykuoka@gmail.com>
 
-COPY . /go/src/github.com/s12v/awsbeats
+COPY . /go/src/github.com/lumigo-io/awsbeats
 
-WORKDIR /go/src/github.com/s12v/awsbeats
+WORKDIR /go/src/github.com/lumigo-io/awsbeats
 
 ARG BEATS_VERSION=${BEATS_VERSION:-6.5.4}
 ARG GO_PLATFORM=${GO_PLATFORM:-linux-amd64}
 ARG AWSBEATS_VERSION=${AWSBEATS_VERSION:-1-snapshot}
 ARG BEAT_NAME=${BEAT_NAME:-filebeat}
+ARG GO111MODULE=off
 RUN curl -s --fail https://raw.githubusercontent.com/golang/dep/master/install.sh -o install.sh && sh install.sh && rm install.sh
 RUN go get github.com/elastic/beats || true
 RUN /go/bin/dep ensure
@@ -40,15 +41,16 @@ ARG GO_PLATFORM=${GO_PLATFORM:-linux-amd64}
 ARG BEAT_NAME=${BEAT_NAME:-filebeat}
 ARG BEAT_GITHUB_REPO
 ARG BEAT_GO_PKG
+ARG GO111MODULE=off
 
-#RUN go get github.com/elastic/beats || true
+# RUN go get github.com/elastic/beats || true
 # Beats requires CGO for plugin support as per https://github.com/elastic/beats/commit/d21decb720e7fdeb986f4ebac413cc816353aa55
 RUN CGO_ENABLED=1 make beats && \
   pwd && find ./target
 
 FROM ${BEAT_DOCKER_IMAGE}
 
-LABEL maintainr "Yusuke KUOKA <ykuoka@gmail.com>"
+# LABEL maintainr "Yusuke KUOKA <ykuoka@gmail.com>"
 
 ARG AWSBEATS_VERSION=${AWSBEATS_VERSION:-1-snapshot}
 ARG BEATS_VERSION=${BEATS_VERSION:-6.1.2}
@@ -56,11 +58,12 @@ ARG GO_VERSION=${GO_VERSION:-1.10.2}
 ARG GO_PLATFORM=${GO_PLATFORM:-linux-amd64}
 ARG BEAT_NAME=${BEAT_NAME:-filebeat}
 
-COPY --from=awsbeats /go/src/github.com/s12v/awsbeats/target/kinesis-${AWSBEATS_VERSION}-${BEATS_VERSION}-go${GO_VERSION}-linux-amd64.so /usr/share/${BEAT_NAME}/kinesis.so
+COPY --from=awsbeats /go/src/github.com/lumigo-io/awsbeats/target/kinesis-${AWSBEATS_VERSION}-${BEATS_VERSION}-go${GO_VERSION}-linux-amd64.so /usr/share/${BEAT_NAME}/kinesis.so
 COPY --from=beats /build/target/${BEAT_NAME}-${BEATS_VERSION}-go${GO_VERSION}-linux-amd64 /usr/share/${BEAT_NAME}/${BEAT_NAME}
 
 # Usage:
 #   docker run --rm s12v/awsbeats:canary cat filebeat.yml > filebeat.yml
 #   cat outputs.yml >> filebeat.yml
 #   docker run --rm -v $(pwd)/filebeat.yml:/etc/filebeat/filebeat.yml s12v/awsbeats:canary filebeat --plugin kinesis.so -e -v
-# asdf
+#leon
+#   docker run --rm -v $(pwd)/filebeat-leon.yml:/etc/filebeat/filebeat.yml lumigo/awsbeats:8f5fa72-dirty filebeat --plugin kinesis.so -e -v
