@@ -2,6 +2,7 @@ package streams
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -13,21 +14,29 @@ import (
 )
 
 type StubCodec struct {
-	dat []byte
-	err error
+	dat [][]byte
+	err []error
 }
 
-func (c StubCodec) Encode(index string, event *beat.Event) ([]byte, error) {
-	return c.dat, c.err
+func (c *StubCodec) Encode(index string, event *beat.Event) ([]byte, error) {
+	dat, err := c.dat[0], c.err[0]
+	c.dat = c.dat[1:]
+	c.err = c.err[1:]
+	return dat, err
 }
 
 type StubClient struct {
-	out *kinesis.PutRecordsOutput
-	err error
+	calls int
+	out   []*kinesis.PutRecordsOutput
+	err   []error
 }
 
-func (c StubClient) PutRecords(input *kinesis.PutRecordsInput) (*kinesis.PutRecordsOutput, error) {
-	return c.out, c.err
+func (c *StubClient) PutRecords(input *kinesis.PutRecordsInput) (*kinesis.PutRecordsOutput, error) {
+	c.calls += 1
+	out, err := c.out[0], c.err[0]
+	c.out = c.out[1:]
+	c.err = c.err[1:]
+	return out, err
 }
 
 func TestCreateXidPartitionKeyProvider(t *testing.T) {
@@ -66,9 +75,11 @@ func TestMapEvent(t *testing.T) {
 	fieldForPartitionKey := "mypartitionkey"
 	expectedPartitionKey := "foobar"
 	provider := newFieldPartitionKeyProvider(fieldForPartitionKey)
-	client := client{encoder: StubCodec{dat: []byte("boom")}, partitionKeyProvider: provider}
+	codecData := [][]byte{[]byte("boom")}
+	codecErr := []error{nil}
+	client := &client{encoder: &StubCodec{dat: codecData, err: codecErr}, partitionKeyProvider: provider}
 	event := &publisher.Event{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}}
-	record, err := client.mapEvent(event)
+	_, record, err := client.mapEvent(event)
 
 	if err != nil {
 		t.Fatalf("uenxpected error: %v", err)
@@ -89,10 +100,13 @@ func TestMapEvents(t *testing.T) {
 	expectedPartitionKey := "foobar"
 	provider := newFieldPartitionKeyProvider(fieldForPartitionKey)
 
-	client := client{encoder: StubCodec{dat: []byte("boom")}, partitionKeyProvider: provider}
+	codecData := [][]byte{[]byte("boom")}
+	codecErr := []error{nil}
+	client := client{encoder: &StubCodec{dat: codecData, err: codecErr}, partitionKeyProvider: provider}
 	event := publisher.Event{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}}
 	events := []publisher.Event{event}
-	okEvents, records, _ := client.mapEvents(events)
+	batches := client.mapEvents(events)
+	okEvents, records, _ := batches[0].okEvents, batches[0].records, batches[0].dropped
 
 	if len(records) != 1 {
 		t.Errorf("Expected 1 records, got %v", len(records))
@@ -119,9 +133,12 @@ func TestPublishEvents(t *testing.T) {
 	events := []publisher.Event{event}
 
 	{
-		client.encoder = StubCodec{dat: []byte("boom"), err: nil}
-		client.streams = StubClient{
-			out: &kinesis.PutRecordsOutput{
+		codecData := [][]byte{[]byte("boom")}
+		codecErr := []error{nil}
+		client.encoder = &StubCodec{dat: codecData, err: codecErr}
+
+		putRecordsOut := []*kinesis.PutRecordsOutput{
+			&kinesis.PutRecordsOutput{
 				Records: []*kinesis.PutRecordsResultEntry{
 					&kinesis.PutRecordsResultEntry{
 						ErrorCode: aws.String(""),
@@ -130,6 +147,8 @@ func TestPublishEvents(t *testing.T) {
 				FailedRecordCount: aws.Int64(0),
 			},
 		}
+		putRecordsErr := []error{nil}
+		client.streams = &StubClient{out: putRecordsOut, err: putRecordsErr}
 		rest, err := client.publishEvents(events)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -141,9 +160,11 @@ func TestPublishEvents(t *testing.T) {
 
 	{
 		// An event that can't be encoded should be ignored without any error, but with some log.
-		client.encoder = StubCodec{dat: []byte(""), err: fmt.Errorf("failed to encode")}
-		client.streams = StubClient{
-			out: &kinesis.PutRecordsOutput{
+		codecData := [][]byte{[]byte("")}
+		codecErr := []error{fmt.Errorf("failed to encode")}
+		client.encoder = &StubCodec{dat: codecData, err: codecErr}
+		putRecordsOut := []*kinesis.PutRecordsOutput{
+			&kinesis.PutRecordsOutput{
 				Records: []*kinesis.PutRecordsResultEntry{
 					&kinesis.PutRecordsResultEntry{
 						ErrorCode: aws.String(""),
@@ -152,6 +173,9 @@ func TestPublishEvents(t *testing.T) {
 				FailedRecordCount: aws.Int64(0),
 			},
 		}
+		putRecordsErr := []error{nil}
+		client.streams = &StubClient{out: putRecordsOut, err: putRecordsErr}
+
 		rest, err := client.publishEvents(events)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -163,15 +187,21 @@ func TestPublishEvents(t *testing.T) {
 
 	{
 		// Nil records returned by Kinesis should be ignored with some log
-		client.encoder = StubCodec{dat: []byte("boom"), err: nil}
-		client.streams = StubClient{
-			out: &kinesis.PutRecordsOutput{
+		codecData := [][]byte{[]byte("boom")}
+		codecErr := []error{nil}
+		client.encoder = &StubCodec{dat: codecData, err: codecErr}
+
+		putRecordsOut := []*kinesis.PutRecordsOutput{
+			&kinesis.PutRecordsOutput{
 				Records: []*kinesis.PutRecordsResultEntry{
 					nil,
 				},
 				FailedRecordCount: aws.Int64(1),
 			},
 		}
+		putRecordsErr := []error{nil}
+		client.streams = &StubClient{out: putRecordsOut, err: putRecordsErr}
+
 		rest, err := client.publishEvents(events)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -183,9 +213,12 @@ func TestPublishEvents(t *testing.T) {
 
 	{
 		// Records with nil error codes should be ignored with some log
-		client.encoder = StubCodec{dat: []byte("boom"), err: nil}
-		client.streams = StubClient{
-			out: &kinesis.PutRecordsOutput{
+		codecData := [][]byte{[]byte("boom")}
+		codecErr := []error{nil}
+		client.encoder = &StubCodec{dat: codecData, err: codecErr}
+
+		putRecordsOut := []*kinesis.PutRecordsOutput{
+			&kinesis.PutRecordsOutput{
 				Records: []*kinesis.PutRecordsResultEntry{
 					&kinesis.PutRecordsResultEntry{
 						ErrorCode: nil,
@@ -194,6 +227,9 @@ func TestPublishEvents(t *testing.T) {
 				FailedRecordCount: aws.Int64(1),
 			},
 		}
+		putRecordsErr := []error{nil}
+		client.streams = &StubClient{out: putRecordsOut, err: putRecordsErr}
+
 		rest, err := client.publishEvents(events)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -205,9 +241,12 @@ func TestPublishEvents(t *testing.T) {
 
 	{
 		// Kinesis received the event but it was not persisted, probably due to underlying infrastructure failure
-		client.encoder = StubCodec{dat: []byte("boom"), err: nil}
-		client.streams = StubClient{
-			out: &kinesis.PutRecordsOutput{
+		codecData := [][]byte{[]byte("boom")}
+		codecErr := []error{nil}
+		client.encoder = &StubCodec{dat: codecData, err: codecErr}
+
+		putRecordsOut := []*kinesis.PutRecordsOutput{
+			&kinesis.PutRecordsOutput{
 				Records: []*kinesis.PutRecordsResultEntry{
 					&kinesis.PutRecordsResultEntry{
 						ErrorCode: aws.String("simulated_error"),
@@ -216,21 +255,112 @@ func TestPublishEvents(t *testing.T) {
 				FailedRecordCount: aws.Int64(1),
 			},
 		}
-		// rest, err := client.publishEvents(events)
-		_, err := client.publishEvents(events)
+		putRecordsErr := []error{nil}
+		client.streams = &StubClient{out: putRecordsOut, err: putRecordsErr}
+
+		rest, err := client.publishEvents(events)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-		// if len(rest) != 1 {
-		// 	t.Errorf("unexpected number of remaining events: %d", len(rest))
-		// }
+		if len(rest) != 1 {
+			t.Errorf("unexpected number of remaining events: %d", len(rest))
+		}
+	}
+}
+
+func TestTestPublishEventsBatch(t *testing.T) {
+	events := []publisher.Event{}
+	fieldForPartitionKey := "mypartitionkey"
+	provider := newFieldPartitionKeyProvider(fieldForPartitionKey)
+	client := client{
+		partitionKeyProvider: provider,
+		observer:             outputs.NewNilObserver(),
+	}
+	codecData := [][]byte{
+		[]byte(strings.Repeat("a", 500000)),
+		[]byte(strings.Repeat("a", 500000)),
+		[]byte(strings.Repeat("a", 500000)),
+		[]byte(strings.Repeat("a", 900000)),
+		[]byte(strings.Repeat("a", 900000)),
+		[]byte(strings.Repeat("a", 900000)),
+		[]byte(strings.Repeat("a", 900000)),
+		[]byte(strings.Repeat("a", 900000)),
+		[]byte(strings.Repeat("a", 900000)),
+	}
+	codecErr := []error{
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+	}
+	client.encoder = &StubCodec{dat: codecData, err: codecErr}
+
+	putRecordsOutputGood := &kinesis.PutRecordsOutput{
+		Records: []*kinesis.PutRecordsResultEntry{
+			&kinesis.PutRecordsResultEntry{
+				ErrorCode: aws.String(""),
+			},
+		},
+		FailedRecordCount: aws.Int64(0),
+	}
+	putRecordsOut := []*kinesis.PutRecordsOutput{
+		putRecordsOutputGood,
+		putRecordsOutputGood,
+		putRecordsOutputGood,
+		putRecordsOutputGood,
+		putRecordsOutputGood,
+		putRecordsOutputGood,
+		putRecordsOutputGood,
+		putRecordsOutputGood,
+		putRecordsOutputGood,
+	}
+	putRecordsErr := []error{
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+	}
+	kinesisStub := &StubClient{out: putRecordsOut, err: putRecordsErr}
+	client.streams = kinesisStub
+
+	for _, _ = range putRecordsErr {
+		events = append(events, publisher.Event{
+			Content: beat.Event{
+				Fields: common.MapStr{
+					fieldForPartitionKey: "expectedPartitionKey",
+				},
+			},
+		},
+		)
+	}
+	rest, err := client.publishEvents(events)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if len(rest) != 0 {
+		t.Errorf("unexpected number of remaining events: %d", len(rest))
+	}
+	if kinesisStub.calls != 2 {
+		t.Errorf("unexpected number of batches: %d", kinesisStub.calls)
 	}
 }
 
 func TestClient_String(t *testing.T) {
 	fieldForPartitionKey := "mypartitionkey"
 	provider := newFieldPartitionKeyProvider(fieldForPartitionKey)
-	client := client{encoder: StubCodec{dat: []byte("boom")}, partitionKeyProvider: provider}
+	codecData := [][]byte{[]byte("boom")}
+	codecErr := []error{nil}
+	client := client{encoder: &StubCodec{dat: codecData, err: codecErr}, partitionKeyProvider: provider}
 
 	if v := client.String(); v != "streams" {
 		t.Errorf("unexpected value '%v'", v)

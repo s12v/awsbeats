@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:67577d57c309261e831d331fda1cdce4f48368d77711ebdb87e0f52d1f54135c"
+  digest = "1:3e9f9805a205bb2c2ac48e968e71642ce26ed270eac7834e5a42d58d442c852a"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -43,30 +43,41 @@
     "service/sts",
     "service/sts/stsiface",
   ]
-  pruneopts = ""
+  pruneopts = "UT"
   revision = "6e7b2b1d30f3c9d7dc6dcf48a60aac7d345c7ff7"
   version = "v1.24.6"
 
 [[projects]]
-  digest = "1:13fe471d0ed891e8544eddfeeb0471fd3c9f2015609a1c000aefdedf52a19d40"
+  digest = "1:bb81097a5b62634f3e9fec1014657855610c82d19b9a40c17612e32651e35dca"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
-  pruneopts = ""
+  pruneopts = "UT"
   revision = "c2b33e84"
 
 [[projects]]
-  digest = "1:ef0f9731bc6c3c59396adc50f36da36ca98c704812c449794f9326f7bc64b5f1"
+  digest = "1:b6bbd2f9e0724bd81890c8644259f920c6d61c08453978faff0bebd25f3e7d3e"
   name = "github.com/jpillora/backoff"
   packages = ["."]
-  pruneopts = ""
+  pruneopts = "UT"
   revision = "8eab2debe79d12b7bd3d10653910df25fa9552ba"
   version = "1.0.0"
 
 [[projects]]
-  digest = "1:a9ac823421527eaf6566301956cc5ae6dc312f4c0746afc0aa2f23b96f6458bd"
+  digest = "1:1f21d906fc7f43c640d6185915d176001c9ab4d035590cb04d665c2caf62d143"
+  name = "github.com/lumigo-io/awsbeats"
+  packages = [
+    "firehose",
+    "streams",
+  ]
+  pruneopts = "UT"
+  revision = "51fbe6b4e2fef5a1341812cfa71faf3794f91a7e"
+  version = "0.3.11"
+
+[[projects]]
+  digest = "1:2e76a73cb51f42d63a2a1a85b3dc5731fd4faf6821b434bd0ef2c099186031d6"
   name = "github.com/rs/xid"
   packages = ["."]
-  pruneopts = ""
+  pruneopts = "UT"
   revision = "15d26544def341f036c5f8dca987a4cbe575032c"
   version = "v1.2.1"
 
@@ -80,6 +91,8 @@
     "github.com/aws/aws-sdk-go/service/firehose",
     "github.com/aws/aws-sdk-go/service/kinesis",
     "github.com/jpillora/backoff",
+    "github.com/lumigo-io/awsbeats/firehose",
+    "github.com/lumigo-io/awsbeats/streams",
     "github.com/rs/xid",
   ]
   solver-name = "gps-cdcl"
