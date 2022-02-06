@@ -121,6 +121,8 @@ func (client *client) publishBatch(b batch, events []publisher.Event) ([]publish
 	}
 	logp.Debug("kinesis", "mapped to records: %v", records)
 	res, err := client.putKinesisRecords(records)
+	// TODO: verify if I need to pass the events. Shouldn't I be able to get the events from the batch?
+	// maybe just use okEvents?
 	failed := collectFailedEvents(res, events)
 	if len(failed) == 0 {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -162,6 +164,12 @@ func (client *client) mapEvents(events []publisher.Event) []batch {
 		} else if batchSize+size > 5000000 { // 5 MiB limit for the entire request https://docs.aws.amazon.com/sdk-for-go/api/service/kinesis/#Kinesis.PutRecords
 			batches = append(batches, batch{okEvents: okEvents, records: records, dropped: dropped})
 			batchSize = 0
+			records = []*kinesis.PutRecordsRequestEntry{
+				record,
+			}
+			okEvents = []publisher.Event{
+				event,
+			}
 		} else {
 			batchSize += size
 			okEvents = append(okEvents, event)
@@ -200,6 +208,7 @@ func (client *client) mapEvent(event *publisher.Event) (int, *kinesis.PutRecords
 
 	return len(buf), &kinesis.PutRecordsRequestEntry{Data: buf, PartitionKey: aws.String(partitionKey)}, nil
 }
+
 func (client *client) putKinesisRecords(records []*kinesis.PutRecordsRequestEntry) (*kinesis.PutRecordsOutput, error) {
 	request := kinesis.PutRecordsInput{
 		StreamName: &client.streamName,

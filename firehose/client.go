@@ -133,6 +133,7 @@ func (client *client) mapEvent(event *publisher.Event) (*firehose.Record, error)
 
 	return &firehose.Record{Data: buf}, nil
 }
+
 func (client *client) sendRecords(records []*firehose.Record) (*firehose.PutRecordBatchOutput, error) {
 	request := firehose.PutRecordBatchInput{
 		DeliveryStreamName: &client.deliveryStreamName,

@@ -26,13 +26,13 @@ func (c *StubCodec) Encode(index string, event *beat.Event) ([]byte, error) {
 }
 
 type StubClient struct {
-	calls int
+	calls []*kinesis.PutRecordsInput
 	out   []*kinesis.PutRecordsOutput
 	err   []error
 }
 
 func (c *StubClient) PutRecords(input *kinesis.PutRecordsInput) (*kinesis.PutRecordsOutput, error) {
-	c.calls += 1
+	c.calls = append(c.calls, input)
 	out, err := c.out[0], c.err[0]
 	c.out = c.out[1:]
 	c.err = c.err[1:]
@@ -350,8 +350,14 @@ func TestTestPublishEventsBatch(t *testing.T) {
 	if len(rest) != 0 {
 		t.Errorf("unexpected number of remaining events: %d", len(rest))
 	}
-	if kinesisStub.calls != 2 {
-		t.Errorf("unexpected number of batches: %d", kinesisStub.calls)
+	if len(kinesisStub.calls) != 2 {
+		t.Errorf("unexpected number of batches: %d", len(kinesisStub.calls))
+	}
+	if len(kinesisStub.calls[0].Records) != 6 {
+		t.Errorf("unexpected number of events in batch 0 batches: %d", len(kinesisStub.calls[0].Records))
+	}
+	if len(kinesisStub.calls[1].Records) != 3 {
+		t.Errorf("unexpected number of events in batch 1 batches: %d", len(kinesisStub.calls[1].Records))
 	}
 }
 
