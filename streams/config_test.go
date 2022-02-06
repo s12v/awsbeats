@@ -24,6 +24,11 @@ func TestValidateBatchSizeBytes(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error invalid batch size bytes")
 	}
+	config = &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", BatchSizeBytes: -2, BatchSize: 50}
+	err = config.Validate()
+	if err == nil {
+		t.Errorf("Expected an error invalid batch size bytes")
+	}
 	config = &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", BatchSizeBytes: 5*1024*1024 - 2, BatchSize: 50}
 	err = config.Validate()
 	if err != nil {

@@ -20,7 +20,7 @@ output:
     partition_key_provider: xid
     batch_size: 500
     max_retries: 20
-    # add max request size (max for real 5MB )
+    batch_size_bytes: 5000000
     backoff:
       min: 1
       max: 30

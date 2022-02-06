@@ -1,6 +1,8 @@
 import argparse
 import os
 
+
+# Create a test file with the given size of each line and lines count.
 def create_file(count, size, name, dst_dir):
     dst = os.path.join(dst_dir, name)
     print('writing {} lines each is {} bytes dst {}'.format(count, size, dst))

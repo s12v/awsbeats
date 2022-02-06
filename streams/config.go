@@ -2,6 +2,7 @@ package streams
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jpillora/backoff"
@@ -35,7 +36,7 @@ var (
 			Max:    60 * time.Second,
 			Jitter: true,
 		},
-		BatchSizeBytes: 5 * 1000 * 1000, // almost 5MB
+		BatchSizeBytes: maxBatchSizeBytes, // 5MB
 	}
 )
 
@@ -49,11 +50,11 @@ func (c *StreamsConfig) Validate() error {
 	}
 
 	if c.BatchSize > maxBatchSize || c.BatchSize < 1 {
-		return errors.New("invalid batch size")
+		return errors.New(fmt.Sprintf("invalid batch size got:%d", c.BatchSize))
 	}
 
 	if c.BatchSizeBytes > maxBatchSizeBytes || c.BatchSizeBytes < 1 {
-		return errors.New("invalid batch size bytes")
+		return errors.New(fmt.Sprintf("invalid batch size bytes got:%d", c.BatchSizeBytes))
 	}
 
 	if c.PartitionKeyProvider != "" && c.PartitionKeyProvider != "xid" {
