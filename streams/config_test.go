@@ -18,8 +18,20 @@ func TestValidateWithRegion(t *testing.T) {
 	}
 }
 
+func TestValidateBatchSizeBytes(t *testing.T) {
+	config := &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", BatchSizeBytes: 5 * 1024 * 1024, BatchSize: 50}
+	err := config.Validate()
+	if err == nil {
+		t.Errorf("Expected an error invalid batch size bytes")
+	}
+	config = &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", BatchSizeBytes: 5*1024*1024 - 2, BatchSize: 50}
+	err = config.Validate()
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+}
 func TestValidateWithRegionAndStreamNameAndBatchSize(t *testing.T) {
-	config := &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", BatchSize: 50}
+	config := &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", BatchSize: 50, BatchSizeBytes: 5}
 	err := config.Validate()
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -27,7 +39,7 @@ func TestValidateWithRegionAndStreamNameAndBatchSize(t *testing.T) {
 }
 
 func TestValidateWithRegionAndStreamNameAndInvalidBatchSize501(t *testing.T) {
-	config := &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", BatchSize: 501}
+	config := &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", BatchSize: 501, BatchSizeBytes: 5}
 	err := config.Validate()
 	if err == nil {
 		t.Errorf("Expected an error")
@@ -35,7 +47,7 @@ func TestValidateWithRegionAndStreamNameAndInvalidBatchSize501(t *testing.T) {
 }
 
 func TestValidateWithRegionAndStreamNameAndInvalidBatchSize0(t *testing.T) {
-	config := &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", BatchSize: 0}
+	config := &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", BatchSize: 0, BatchSizeBytes: 5}
 	err := config.Validate()
 	if err == nil {
 		t.Errorf("Expected an error")
@@ -43,7 +55,7 @@ func TestValidateWithRegionAndStreamNameAndInvalidBatchSize0(t *testing.T) {
 }
 
 func TestValidateWithRegionAndStreamNameAndInvalidPartitionKeyProvider(t *testing.T) {
-	config := &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", PartitionKeyProvider: "uuid"}
+	config := &StreamsConfig{Region: "eu-central-1", DeliveryStreamName: "foo", PartitionKeyProvider: "uuid", BatchSizeBytes: 5}
 	err := config.Validate()
 	if err == nil {
 		t.Errorf("Expected an error")

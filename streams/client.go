@@ -24,14 +24,16 @@ type client struct {
 	beatName             string
 	encoder              codec.Codec
 	timeout              time.Duration
+	batchSizeBytes       int
 	observer             outputs.Observer
 	backoff              backoff.Backoff
 }
 
 type batch struct {
-	okEvents []publisher.Event
-	records  []*kinesis.PutRecordsRequestEntry
-	dropped  int
+	allEvents []publisher.Event
+	okEvents  []publisher.Event
+	records   []*kinesis.PutRecordsRequestEntry
+	dropped   int
 }
 
 type kinesisStreamsClient interface {
@@ -47,6 +49,7 @@ func newClient(sess *session.Session, config *StreamsConfig, observer outputs.Ob
 		beatName:             beat.Beat,
 		encoder:              json.New(beat.Version, json.Config{Pretty: false, EscapeHTML: true}),
 		timeout:              config.Timeout,
+		batchSizeBytes:       config.BatchSizeBytes,
 		observer:             observer,
 		backoff:              config.Backoff,
 	}
@@ -94,7 +97,7 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 	batches := client.mapEvents(events)
 	totalFailed := []publisher.Event{}
 	for _, batch := range batches {
-		failed, err := client.publishBatch(batch, events)
+		failed, err := client.publishBatch(batch)
 		if err != nil || len(failed) > 0 {
 			totalFailed = append(totalFailed, failed...)
 		}
@@ -103,12 +106,12 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 	return totalFailed, nil
 }
 
-func (client *client) publishBatch(b batch, events []publisher.Event) ([]publisher.Event, error) {
+func (client *client) publishBatch(b batch) ([]publisher.Event, error) {
 	observer := client.observer
 	batch_size := len(b.records) + b.dropped + len(b.okEvents)
 	observer.NewBatch(batch_size)
 
-	okEvents, records, dropped := b.okEvents, b.records, b.dropped
+	okEvents, records, dropped, events := b.okEvents, b.records, b.dropped, b.allEvents
 
 	if dropped > 0 {
 		logp.Debug("kinesis", "sent %d records: %v", len(records), records)
@@ -152,31 +155,34 @@ func (client *client) mapEvents(events []publisher.Event) []batch {
 	dropped := 0
 	records := []*kinesis.PutRecordsRequestEntry{}
 	okEvents := []publisher.Event{}
+	allEvents := []publisher.Event{}
 
 	batchSize := 0
 
 	for i := range events {
 		event := events[i]
+		allEvents = append(allEvents, event)
 		size, record, err := client.mapEvent(&event)
 		if err != nil {
 			logp.Debug("kinesis", "failed to map event(%v): %v", event, err)
 			dropped++
-		} else if batchSize+size > 5000000 { // 5 MiB limit for the entire request https://docs.aws.amazon.com/sdk-for-go/api/service/kinesis/#Kinesis.PutRecords
-			batches = append(batches, batch{okEvents: okEvents, records: records, dropped: dropped})
-			batchSize = 0
-			records = []*kinesis.PutRecordsRequestEntry{
-				record,
-			}
-			okEvents = []publisher.Event{
-				event,
-			}
+		} else if batchSize+size > client.batchSizeBytes {
+			batches = append(batches, batch{
+				okEvents:  okEvents,
+				records:   records,
+				dropped:   dropped,
+				allEvents: allEvents[:len(allEvents)-1]})
+			allEvents = []publisher.Event{event}
+			batchSize = size
+			records = []*kinesis.PutRecordsRequestEntry{record}
+			okEvents = []publisher.Event{event}
 		} else {
 			batchSize += size
 			okEvents = append(okEvents, event)
 			records = append(records, record)
 		}
 	}
-	batches = append(batches, batch{okEvents: okEvents, records: records, dropped: dropped})
+	batches = append(batches, batch{okEvents: okEvents, records: records, dropped: dropped, allEvents: allEvents})
 	return batches
 }
 

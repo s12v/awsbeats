@@ -12,7 +12,7 @@ def create_file(count, size, name, dst_dir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create test file for lumigo-io/awsbeats')
     parser.add_argument('--type', nargs='+',
-                    choices=['1k800kb', '1k500kb', '10k100kb', '100k10kb'],
+                    choices=['1k800kb', '1k500kb', '10k100kb', '1m1kb'],
                     help='Test file type')
     parser.add_argument('--dir', nargs='+',
                     help='File destination directory')
@@ -27,7 +27,7 @@ if __name__ == "__main__":
         create_file(1000, 500000, test_type, test_dir)
     elif test_type == '10k10kb':
         create_file(10000, 10000, test_type, test_dir)
-    elif test_type == '100k1kb':
-        create_file(1000, 1000, test_type, test_dir)
+    elif test_type == '1m1kb':
+        create_file(1000000, 1000, test_type, test_dir)
     else:
         print('doing nothing got {}'.format(test_type))

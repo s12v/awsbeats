@@ -102,7 +102,11 @@ func TestMapEvents(t *testing.T) {
 
 	codecData := [][]byte{[]byte("boom")}
 	codecErr := []error{nil}
-	client := client{encoder: &StubCodec{dat: codecData, err: codecErr}, partitionKeyProvider: provider}
+	client := client{
+		encoder:              &StubCodec{dat: codecData, err: codecErr},
+		partitionKeyProvider: provider,
+		batchSizeBytes:       5 * 1000 * 1000,
+	}
 	event := publisher.Event{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}}
 	events := []publisher.Event{event}
 	batches := client.mapEvents(events)
@@ -128,6 +132,7 @@ func TestPublishEvents(t *testing.T) {
 	client := client{
 		partitionKeyProvider: provider,
 		observer:             outputs.NewNilObserver(),
+		batchSizeBytes:       5 * 1000 * 1000,
 	}
 	event := publisher.Event{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}}
 	events := []publisher.Event{event}
@@ -275,6 +280,7 @@ func TestTestPublishEventsBatch(t *testing.T) {
 	client := client{
 		partitionKeyProvider: provider,
 		observer:             outputs.NewNilObserver(),
+		batchSizeBytes:       5 * 1000 * 1000,
 	}
 	codecData := [][]byte{
 		[]byte(strings.Repeat("a", 500000)),
