@@ -14,7 +14,7 @@ docker run \
   -v $(pwd)/filebeat.yml:/etc/filebeat/filebeat.yml \
   -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
   -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
-  lumigo/awsbeats:8f5fa72-dirty \
+  lumigo/awsbeats:4879b6a \
   filebeat \
   --plugin kinesis.so \
   -e \
