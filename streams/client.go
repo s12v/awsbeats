@@ -161,7 +161,7 @@ func (client *client) mapEvents(events []publisher.Event) []batch {
 		event := events[i]
 		size, record, err := client.mapEvent(&event)
 		if size >= client.batchSizeBytes {
-			logp.Critical("kinesis single record is bigger than batchSizeBytes %d reached, sending batch without it! no backoff!", client.batchSizeBytes)
+			logp.Critical("kinesis single record of size %d is bigger than batchSizeBytes %d, sending batch without it! no backoff!", size, client.batchSizeBytes)
 			continue
 		}
 		allEvents = append(allEvents, event)
