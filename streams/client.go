@@ -108,11 +108,9 @@ func (client *client) publishEvents(events []publisher.Event) ([]publisher.Event
 
 func (client *client) publishBatch(b batch) ([]publisher.Event, error) {
 	observer := client.observer
-	batch_size := len(b.records) + b.dropped + len(b.okEvents)
-	observer.NewBatch(batch_size)
 
 	okEvents, records, dropped, events := b.okEvents, b.records, b.dropped, b.allEvents
-
+	observer.NewBatch(len(b.allEvents))
 	if dropped > 0 {
 		logp.Debug("kinesis", "sent %d records: %v", len(records), records)
 		observer.Dropped(dropped)
@@ -161,17 +159,22 @@ func (client *client) mapEvents(events []publisher.Event) []batch {
 
 	for i := range events {
 		event := events[i]
-		allEvents = append(allEvents, event)
 		size, record, err := client.mapEvent(&event)
+		if size >= client.batchSizeBytes {
+			logp.Critical("kinesis single record is bigger than batchSizeBytes %d reached, sending batch without it! no backoff!", client.batchSizeBytes)
+			continue
+		}
+		allEvents = append(allEvents, event)
 		if err != nil {
 			logp.Debug("kinesis", "failed to map event(%v): %v", event, err)
 			dropped++
-		} else if batchSize+size > client.batchSizeBytes {
+		} else if batchSize+size >= client.batchSizeBytes {
 			batches = append(batches, batch{
 				okEvents:  okEvents,
 				records:   records,
 				dropped:   dropped,
 				allEvents: allEvents[:len(allEvents)-1]})
+			dropped = 0
 			allEvents = []publisher.Event{event}
 			batchSize = size
 			records = []*kinesis.PutRecordsRequestEntry{record}

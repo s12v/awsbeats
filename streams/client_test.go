@@ -95,6 +95,43 @@ func TestMapEvent(t *testing.T) {
 	}
 }
 
+func TestMapEventsEventBiggetThanMaxSize(t *testing.T) {
+	fieldForPartitionKey := "mypartitionkey"
+	expectedPartitionKey := "foobar"
+	provider := newFieldPartitionKeyProvider(fieldForPartitionKey)
+
+	codecData := [][]byte{[]byte("boom"), []byte("boo")}
+	codecErr := []error{nil, nil}
+	client := client{
+		encoder:              &StubCodec{dat: codecData, err: codecErr},
+		partitionKeyProvider: provider,
+		batchSizeBytes:       5,
+	}
+	events := []publisher.Event{
+		{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}},
+		{Content: beat.Event{Fields: common.MapStr{fieldForPartitionKey: expectedPartitionKey}}},
+	}
+	batches := client.mapEvents(events)
+	okEvents, records, dropped, events := batches[0].okEvents, batches[0].records, batches[0].dropped, batches[0].allEvents
+
+	if dropped != 0 {
+		t.Errorf("Expected 0 dropped, got: %d", dropped)
+	}
+	if len(records) != 1 {
+		t.Errorf("Expected 1 records, got %v", len(records))
+	}
+	if len(events) != 1 {
+		t.Errorf("Expected 1 events, got %v", len(events))
+	}
+	if len(okEvents) != 1 {
+		t.Errorf("Expected 1 ok events, got %v", len(okEvents))
+	}
+	if string(records[0].Data) != "boo\n" {
+		t.Errorf("Unexpected data %s", records[0].Data)
+	}
+
+}
+
 func TestMapEvents(t *testing.T) {
 	fieldForPartitionKey := "mypartitionkey"
 	expectedPartitionKey := "foobar"
